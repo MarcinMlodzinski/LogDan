@@ -1,0 +1,3 @@
+../Core/Src/lcd.c:30:6:MX_LCD_Init	8	static
+../Core/Src/lcd.c:63:6:HAL_LCD_MspInit	192	static
+../Core/Src/lcd.c:160:6:HAL_LCD_MspDeInit	16	static

@@ -30,7 +30,7 @@
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
-
+#include "stm32l476g_discovery_glass_lcd.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -98,7 +98,7 @@ int main(void)
   MX_GPIO_Init();
   MX_I2C1_Init();
   MX_I2C2_Init();
-  MX_LCD_Init();
+//  MX_LCD_Init();
   MX_QUADSPI_Init();
   MX_SAI1_Init();
   MX_SPI2_Init();
@@ -106,15 +106,19 @@ int main(void)
   MX_RTC_Init();
   MX_IWDG_Init();
   /* USER CODE BEGIN 2 */
-
+  BSP_LCD_GLASS_Init();
+  BSP_LCD_GLASS_Clear();
   /* USER CODE END 2 */
-
+//  uint32_t time=HAL_GetTick();
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
   while (1)
   {
-    /* USER CODE END WHILE */
 
+	  BSP_LCD_GLASS_DisplayString((uint8_t *)"AAAAAAA");
+	  HAL_IWDG_Refresh(&hiwdg);
+//	  BSP_LCD_GLASS_Clear();
+	  /* USER CODE END WHILE */
     /* USER CODE BEGIN 3 */
   }
   /* USER CODE END 3 */
