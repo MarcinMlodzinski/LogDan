@@ -27,10 +27,10 @@
 #include "spi.h"
 #include "usart.h"
 #include "gpio.h"
-#include "stdbool.h"
-
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
+#include "stdbool.h"
+#include "string.h"
 #include "stm32l476g_discovery_glass_lcd.h"
 /* USER CODE END Includes */
 
@@ -64,6 +64,7 @@ void PeriphCommonClock_Config(void);
 /* USER CODE BEGIN 0 */
 void LCDBarDemo();
 void LCDCharDemo();
+void LCDStringDemo();
 /* USER CODE END 0 */
 
 /**
@@ -117,6 +118,7 @@ int main(void)
   {
 	  LCDBarDemo();
 	  LCDCharDemo();
+	  LCDStringDemo();
 
 	  HAL_IWDG_Refresh(&hiwdg);
 	  /* USER CODE END WHILE */
@@ -256,6 +258,40 @@ void LCDCharDemo(){
 			i++;
 			last_ms = now;
 			}
+		HAL_IWDG_Refresh(&hiwdg);
+	}
+	BSP_LCD_GLASS_Clear();
+}
+
+void LCDStringDemo(){
+	uint32_t last_ms=HAL_GetTick();
+	uint32_t now=last_ms;
+	uint32_t delay_500ms=500;
+	int i=0;
+
+	char text[] = "      SAMPLE TEXT TO SCROLL";
+	char display[6];
+
+	for(int j=0;j<6;j++){
+		display[j]=text[j];
+	}
+
+	BSP_LCD_GLASS_Clear();
+//	BSP_LCD_GLASS_DisplayString((uint8_t *)"8:8.888888"); //impossible to write a : or . using this function
+	while(i<=strlen(text)-6){
+		now = HAL_GetTick();
+		if (now - last_ms >= delay_500ms){
+			i++;
+			last_ms = now;
+
+			for(int j=i;j<6+i;j++){
+				display[j-i]=text[j];
+			}
+
+			BSP_LCD_GLASS_Clear();
+			BSP_LCD_GLASS_DisplayString((uint8_t *)display);
+		}
+
 		HAL_IWDG_Refresh(&hiwdg);
 	}
 	BSP_LCD_GLASS_Clear();
