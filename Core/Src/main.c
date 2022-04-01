@@ -258,6 +258,7 @@ void LCDCharDemo(){
 			}
 		HAL_IWDG_Refresh(&hiwdg);
 	}
+	BSP_LCD_GLASS_Clear();
 }
 /* USER CODE END 4 */
 
