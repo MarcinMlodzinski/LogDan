@@ -63,6 +63,7 @@ void PeriphCommonClock_Config(void);
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
 void LCDBarDemo();
+void LCDCharDemo();
 /* USER CODE END 0 */
 
 /**
@@ -115,6 +116,7 @@ int main(void)
   while (1)
   {
 	  LCDBarDemo();
+	  LCDCharDemo();
 
 	  HAL_IWDG_Refresh(&hiwdg);
 	  /* USER CODE END WHILE */
@@ -229,6 +231,33 @@ void LCDBarDemo(){
 		HAL_IWDG_Refresh(&hiwdg);
 		}
 	BSP_LCD_GLASS_Clear();
+}
+
+void LCDCharDemo(){
+	uint32_t last_ms=HAL_GetTick();
+	uint32_t now=last_ms;
+	uint32_t delay_500ms=500;
+	int i=0;
+
+	BSP_LCD_GLASS_Clear();
+
+	while(!(i>LCD_DIGIT_POSITION_6)){
+		now = HAL_GetTick();
+
+		if(i<=LCD_DIGIT_POSITION_4){
+			BSP_LCD_GLASS_DisplayChar((uint8_t *)"8", POINT_ON, DOUBLEPOINT_ON, i);
+		}
+		else{
+			BSP_LCD_GLASS_DisplayChar((uint8_t *)"8", POINT_OFF, DOUBLEPOINT_OFF, i); //in this moment point and double point display bars
+		}
+
+
+		if (now - last_ms >= 2*delay_500ms){
+			i++;
+			last_ms = now;
+			}
+		HAL_IWDG_Refresh(&hiwdg);
+	}
 }
 /* USER CODE END 4 */
 
