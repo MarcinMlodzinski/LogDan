@@ -27,6 +27,7 @@
 #include "spi.h"
 #include "usart.h"
 #include "gpio.h"
+#include "stdbool.h"
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
@@ -57,7 +58,6 @@
 void SystemClock_Config(void);
 void PeriphCommonClock_Config(void);
 /* USER CODE BEGIN PFP */
-
 /* USER CODE END PFP */
 
 /* Private user code ---------------------------------------------------------*/
@@ -108,16 +108,45 @@ int main(void)
   /* USER CODE BEGIN 2 */
   BSP_LCD_GLASS_Init();
   BSP_LCD_GLASS_Clear();
+
+  uint32_t last_ms=HAL_GetTick();
+  uint32_t now=last_ms;
+  uint32_t delay_500ms=500;
+  int i=0;
   /* USER CODE END 2 */
-//  uint32_t time=HAL_GetTick();
+
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
   while (1)
   {
+	  now = HAL_GetTick();
 
-	  BSP_LCD_GLASS_DisplayString((uint8_t *)"AAAAAAA");
+	  //LCD bar demo starts
+	  if(i==0){
+		  BSP_LCD_GLASS_Clear();
+		  BSP_LCD_GLASS_DisplayBar(i);
+	  }
+
+	  if (now - last_ms >= 2*delay_500ms){
+		  if(i==0){
+			  i+=1;
+		  }
+		  else{
+			  i=i<<1;
+		  }
+		  BSP_LCD_GLASS_Clear();
+		  BSP_LCD_GLASS_DisplayBar(i);
+		  last_ms = now;
+	  }
+
+	  if(i>LCD_BAR_3){
+		  i=0;
+		  BSP_LCD_GLASS_Clear();
+	  }
+	  //LCD bar demo ends
+
+
 	  HAL_IWDG_Refresh(&hiwdg);
-//	  BSP_LCD_GLASS_Clear();
 	  /* USER CODE END WHILE */
     /* USER CODE BEGIN 3 */
   }
@@ -207,7 +236,6 @@ void PeriphCommonClock_Config(void)
 }
 
 /* USER CODE BEGIN 4 */
-
 /* USER CODE END 4 */
 
 /**
