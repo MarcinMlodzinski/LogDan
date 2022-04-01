@@ -41,7 +41,9 @@ extern LCD_HandleTypeDef hlcd;
 void MX_LCD_Init(void);
 
 /* USER CODE BEGIN Prototypes */
-
+void LCDBarDemo();
+void LCDCharDemo();
+void LCDStringDemo();
 /* USER CODE END Prototypes */
 
 #ifdef __cplusplus

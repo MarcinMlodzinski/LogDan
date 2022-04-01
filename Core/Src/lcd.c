@@ -219,5 +219,90 @@ void HAL_LCD_MspDeInit(LCD_HandleTypeDef* lcdHandle)
 }
 
 /* USER CODE BEGIN 1 */
+void LCDBarDemo(){
+	uint32_t last_ms=HAL_GetTick();
+	uint32_t now=last_ms;
+	uint32_t delay_500ms=500;
+	int i=0;
 
+	while(!(i>LCD_BAR_3)){
+		now = HAL_GetTick();
+		BSP_LCD_GLASS_Clear();
+		BSP_LCD_GLASS_DisplayBar(i);
+
+		if (now - last_ms >= 2*delay_500ms){
+			if(i==0){
+				i+=1;
+			}
+			else{
+				i=i<<1;
+			}
+			last_ms = now;
+			}
+		HAL_IWDG_Refresh(&hiwdg);
+		}
+	BSP_LCD_GLASS_Clear();
+}
+
+void LCDCharDemo(){
+	uint32_t last_ms=HAL_GetTick();
+	uint32_t now=last_ms;
+	uint32_t delay_500ms=500;
+	int i=0;
+
+	BSP_LCD_GLASS_Clear();
+
+	while(!(i>LCD_DIGIT_POSITION_6)){
+		now = HAL_GetTick();
+
+		if(i<=LCD_DIGIT_POSITION_4){
+			BSP_LCD_GLASS_DisplayChar((uint8_t *)"8", POINT_ON, DOUBLEPOINT_ON, i);
+		}
+		else{
+			BSP_LCD_GLASS_DisplayChar((uint8_t *)"8", POINT_OFF, DOUBLEPOINT_OFF, i); //in this moment point and double point display bars
+		}
+
+
+		if (now - last_ms >= 2*delay_500ms){
+			i++;
+			last_ms = now;
+			}
+		HAL_IWDG_Refresh(&hiwdg);
+	}
+	BSP_LCD_GLASS_Clear();
+}
+
+void LCDStringDemo(){
+	uint32_t last_ms=HAL_GetTick();
+	uint32_t now=last_ms;
+	uint32_t delay_500ms=500;
+	int i=0;
+
+	char text[] = "      SAMPLE TEXT TO SCROLL";
+	char display[6];
+
+	for(int j=0;j<6;j++){
+		display[j]=text[j];
+	}
+
+	BSP_LCD_GLASS_Clear();
+//	BSP_LCD_GLASS_DisplayString((uint8_t *)"8:8.888888"); //impossible to write a : or . using this function
+	while(i<=strlen(text)-6){
+		now = HAL_GetTick();
+		if (now - last_ms >= delay_500ms){
+			i++;
+			last_ms = now;
+
+			for(int j=i;j<6+i;j++){
+				display[j-i]=text[j];
+			}
+
+			BSP_LCD_GLASS_Clear();
+			BSP_LCD_GLASS_DisplayString((uint8_t *)display);
+		}
+
+		HAL_IWDG_Refresh(&hiwdg);
+	}
+	BSP_LCD_GLASS_Clear();
+}
 /* USER CODE END 1 */

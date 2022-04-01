@@ -27,23 +27,23 @@ Idx Name          Size      VMA       LMA       File off  Algn
                   ALLOC
  11 .ARM.attributes 00000030  00000000  00000000  0002000c  2**0
                   CONTENTS, READONLY
- 12 .debug_info   00018a59  00000000  00000000  0002003c  2**0
+ 12 .debug_info   00018bb5  00000000  00000000  0002003c  2**0
                   CONTENTS, READONLY, DEBUGGING, OCTETS
- 13 .debug_abbrev 00003939  00000000  00000000  00038a95  2**0
+ 13 .debug_abbrev 00003955  00000000  00000000  00038bf1  2**0
                   CONTENTS, READONLY, DEBUGGING, OCTETS
- 14 .debug_aranges 00001460  00000000  00000000  0003c3d0  2**3
+ 14 .debug_aranges 00001460  00000000  00000000  0003c548  2**3
                   CONTENTS, READONLY, DEBUGGING, OCTETS
- 15 .debug_ranges 000012c0  00000000  00000000  0003d830  2**3
+ 15 .debug_ranges 000012c0  00000000  00000000  0003d9a8  2**3
                   CONTENTS, READONLY, DEBUGGING, OCTETS
- 16 .debug_macro  0002adca  00000000  00000000  0003eaf0  2**0
+ 16 .debug_macro  0002b842  00000000  00000000  0003ec68  2**0
                   CONTENTS, READONLY, DEBUGGING, OCTETS
- 17 .debug_line   0001c0cb  00000000  00000000  000698ba  2**0
+ 17 .debug_line   0001d2cb  00000000  00000000  0006a4aa  2**0
                   CONTENTS, READONLY, DEBUGGING, OCTETS
- 18 .debug_str    000ff251  00000000  00000000  00085985  2**0
+ 18 .debug_str    000ff251  00000000  00000000  00087775  2**0
                   CONTENTS, READONLY, DEBUGGING, OCTETS
- 19 .comment      00000050  00000000  00000000  00184bd6  2**0
+ 19 .comment      00000050  00000000  00000000  001869c6  2**0
                   CONTENTS, READONLY
- 20 .debug_frame  00005294  00000000  00000000  00184c28  2**2
+ 20 .debug_frame  00005294  00000000  00000000  00186a18  2**2
                   CONTENTS, READONLY, DEBUGGING, OCTETS
 
 Disassembly of section .text:
@@ -1412,580 +1412,583 @@ void HAL_LCD_MspInit(LCD_HandleTypeDef* lcdHandle)
  8000b90:	48000400 	.word	0x48000400
  8000b94:	48000c00 	.word	0x48000c00
 
-08000b98 <main>:
+08000b98 <LCDBarDemo>:
+  /* USER CODE END LCD_MspDeInit 1 */
+  }
+}
+
+/* USER CODE BEGIN 1 */
+void LCDBarDemo(){
+ 8000b98:	b580      	push	{r7, lr}
+ 8000b9a:	b084      	sub	sp, #16
+ 8000b9c:	af00      	add	r7, sp, #0
+	uint32_t last_ms=HAL_GetTick();
+ 8000b9e:	f001 fc43 	bl	8002428 <HAL_GetTick>
+ 8000ba2:	60f8      	str	r0, [r7, #12]
+	uint32_t now=last_ms;
+ 8000ba4:	68fb      	ldr	r3, [r7, #12]
+ 8000ba6:	607b      	str	r3, [r7, #4]
+	uint32_t delay_500ms=500;
+ 8000ba8:	f44f 73fa 	mov.w	r3, #500	; 0x1f4
+ 8000bac:	603b      	str	r3, [r7, #0]
+	int i=0;
+ 8000bae:	2300      	movs	r3, #0
+ 8000bb0:	60bb      	str	r3, [r7, #8]
+
+	while(!(i>LCD_BAR_3)){
+ 8000bb2:	e01e      	b.n	8000bf2 <LCDBarDemo+0x5a>
+		now = HAL_GetTick();
+ 8000bb4:	f001 fc38 	bl	8002428 <HAL_GetTick>
+ 8000bb8:	6078      	str	r0, [r7, #4]
+		BSP_LCD_GLASS_Clear();
+ 8000bba:	f000 fd03 	bl	80015c4 <BSP_LCD_GLASS_Clear>
+		BSP_LCD_GLASS_DisplayBar(i);
+ 8000bbe:	68bb      	ldr	r3, [r7, #8]
+ 8000bc0:	4618      	mov	r0, r3
+ 8000bc2:	f000 fc63 	bl	800148c <BSP_LCD_GLASS_DisplayBar>
+
+		if (now - last_ms >= 2*delay_500ms){
+ 8000bc6:	687a      	ldr	r2, [r7, #4]
+ 8000bc8:	68fb      	ldr	r3, [r7, #12]
+ 8000bca:	1ad2      	subs	r2, r2, r3
+ 8000bcc:	683b      	ldr	r3, [r7, #0]
+ 8000bce:	005b      	lsls	r3, r3, #1
+ 8000bd0:	429a      	cmp	r2, r3
+ 8000bd2:	d30b      	bcc.n	8000bec <LCDBarDemo+0x54>
+			if(i==0){
+ 8000bd4:	68bb      	ldr	r3, [r7, #8]
+ 8000bd6:	2b00      	cmp	r3, #0
+ 8000bd8:	d103      	bne.n	8000be2 <LCDBarDemo+0x4a>
+				i+=1;
+ 8000bda:	68bb      	ldr	r3, [r7, #8]
+ 8000bdc:	3301      	adds	r3, #1
+ 8000bde:	60bb      	str	r3, [r7, #8]
+ 8000be0:	e002      	b.n	8000be8 <LCDBarDemo+0x50>
+			}
+			else{
+				i=i<<1;
+ 8000be2:	68bb      	ldr	r3, [r7, #8]
+ 8000be4:	005b      	lsls	r3, r3, #1
+ 8000be6:	60bb      	str	r3, [r7, #8]
+			}
+			last_ms = now;
+ 8000be8:	687b      	ldr	r3, [r7, #4]
+ 8000bea:	60fb      	str	r3, [r7, #12]
+			}
+		HAL_IWDG_Refresh(&hiwdg);
+ 8000bec:	4805      	ldr	r0, [pc, #20]	; (8000c04 <LCDBarDemo+0x6c>)
+ 8000bee:	f002 f868 	bl	8002cc2 <HAL_IWDG_Refresh>
+	while(!(i>LCD_BAR_3)){
+ 8000bf2:	68bb      	ldr	r3, [r7, #8]
+ 8000bf4:	2b08      	cmp	r3, #8
+ 8000bf6:	dddd      	ble.n	8000bb4 <LCDBarDemo+0x1c>
+		}
+	BSP_LCD_GLASS_Clear();
+ 8000bf8:	f000 fce4 	bl	80015c4 <BSP_LCD_GLASS_Clear>
+}
+ 8000bfc:	bf00      	nop
+ 8000bfe:	3710      	adds	r7, #16
+ 8000c00:	46bd      	mov	sp, r7
+ 8000c02:	bd80      	pop	{r7, pc}
+ 8000c04:	200000c0 	.word	0x200000c0
+
+08000c08 <LCDCharDemo>:
+
+void LCDCharDemo(){
+ 8000c08:	b580      	push	{r7, lr}
+ 8000c0a:	b084      	sub	sp, #16
+ 8000c0c:	af00      	add	r7, sp, #0
+	uint32_t last_ms=HAL_GetTick();
+ 8000c0e:	f001 fc0b 	bl	8002428 <HAL_GetTick>
+ 8000c12:	60f8      	str	r0, [r7, #12]
+	uint32_t now=last_ms;
+ 8000c14:	68fb      	ldr	r3, [r7, #12]
+ 8000c16:	607b      	str	r3, [r7, #4]
+	uint32_t delay_500ms=500;
+ 8000c18:	f44f 73fa 	mov.w	r3, #500	; 0x1f4
+ 8000c1c:	603b      	str	r3, [r7, #0]
+	int i=0;
+ 8000c1e:	2300      	movs	r3, #0
+ 8000c20:	60bb      	str	r3, [r7, #8]
+
+	BSP_LCD_GLASS_Clear();
+ 8000c22:	f000 fccf 	bl	80015c4 <BSP_LCD_GLASS_Clear>
+
+	while(!(i>LCD_DIGIT_POSITION_6)){
+ 8000c26:	e023      	b.n	8000c70 <LCDCharDemo+0x68>
+		now = HAL_GetTick();
+ 8000c28:	f001 fbfe 	bl	8002428 <HAL_GetTick>
+ 8000c2c:	6078      	str	r0, [r7, #4]
+
+		if(i<=LCD_DIGIT_POSITION_4){
+ 8000c2e:	68bb      	ldr	r3, [r7, #8]
+ 8000c30:	2b03      	cmp	r3, #3
+ 8000c32:	dc07      	bgt.n	8000c44 <LCDCharDemo+0x3c>
+			BSP_LCD_GLASS_DisplayChar((uint8_t *)"8", POINT_ON, DOUBLEPOINT_ON, i);
+ 8000c34:	68bb      	ldr	r3, [r7, #8]
+ 8000c36:	b2db      	uxtb	r3, r3
+ 8000c38:	2201      	movs	r2, #1
+ 8000c3a:	2101      	movs	r1, #1
+ 8000c3c:	4811      	ldr	r0, [pc, #68]	; (8000c84 <LCDCharDemo+0x7c>)
+ 8000c3e:	f000 fc81 	bl	8001544 <BSP_LCD_GLASS_DisplayChar>
+ 8000c42:	e006      	b.n	8000c52 <LCDCharDemo+0x4a>
+		}
+		else{
+			BSP_LCD_GLASS_DisplayChar((uint8_t *)"8", POINT_OFF, DOUBLEPOINT_OFF, i); //in this moment point and double point display bars
+ 8000c44:	68bb      	ldr	r3, [r7, #8]
+ 8000c46:	b2db      	uxtb	r3, r3
+ 8000c48:	2200      	movs	r2, #0
+ 8000c4a:	2100      	movs	r1, #0
+ 8000c4c:	480d      	ldr	r0, [pc, #52]	; (8000c84 <LCDCharDemo+0x7c>)
+ 8000c4e:	f000 fc79 	bl	8001544 <BSP_LCD_GLASS_DisplayChar>
+		}
+
+
+		if (now - last_ms >= 2*delay_500ms){
+ 8000c52:	687a      	ldr	r2, [r7, #4]
+ 8000c54:	68fb      	ldr	r3, [r7, #12]
+ 8000c56:	1ad2      	subs	r2, r2, r3
+ 8000c58:	683b      	ldr	r3, [r7, #0]
+ 8000c5a:	005b      	lsls	r3, r3, #1
+ 8000c5c:	429a      	cmp	r2, r3
+ 8000c5e:	d304      	bcc.n	8000c6a <LCDCharDemo+0x62>
+			i++;
+ 8000c60:	68bb      	ldr	r3, [r7, #8]
+ 8000c62:	3301      	adds	r3, #1
+ 8000c64:	60bb      	str	r3, [r7, #8]
+			last_ms = now;
+ 8000c66:	687b      	ldr	r3, [r7, #4]
+ 8000c68:	60fb      	str	r3, [r7, #12]
+			}
+		HAL_IWDG_Refresh(&hiwdg);
+ 8000c6a:	4807      	ldr	r0, [pc, #28]	; (8000c88 <LCDCharDemo+0x80>)
+ 8000c6c:	f002 f829 	bl	8002cc2 <HAL_IWDG_Refresh>
+	while(!(i>LCD_DIGIT_POSITION_6)){
+ 8000c70:	68bb      	ldr	r3, [r7, #8]
+ 8000c72:	2b05      	cmp	r3, #5
+ 8000c74:	ddd8      	ble.n	8000c28 <LCDCharDemo+0x20>
+	}
+	BSP_LCD_GLASS_Clear();
+ 8000c76:	f000 fca5 	bl	80015c4 <BSP_LCD_GLASS_Clear>
+}
+ 8000c7a:	bf00      	nop
+ 8000c7c:	3710      	adds	r7, #16
+ 8000c7e:	46bd      	mov	sp, r7
+ 8000c80:	bd80      	pop	{r7, pc}
+ 8000c82:	bf00      	nop
+ 8000c84:	08006814 	.word	0x08006814
+ 8000c88:	200000c0 	.word	0x200000c0
+
+08000c8c <LCDStringDemo>:
+
+void LCDStringDemo(){
+ 8000c8c:	b5b0      	push	{r4, r5, r7, lr}
+ 8000c8e:	b090      	sub	sp, #64	; 0x40
+ 8000c90:	af00      	add	r7, sp, #0
+	uint32_t last_ms=HAL_GetTick();
+ 8000c92:	f001 fbc9 	bl	8002428 <HAL_GetTick>
+ 8000c96:	63f8      	str	r0, [r7, #60]	; 0x3c
+	uint32_t now=last_ms;
+ 8000c98:	6bfb      	ldr	r3, [r7, #60]	; 0x3c
+ 8000c9a:	62fb      	str	r3, [r7, #44]	; 0x2c
+	uint32_t delay_500ms=500;
+ 8000c9c:	f44f 73fa 	mov.w	r3, #500	; 0x1f4
+ 8000ca0:	62bb      	str	r3, [r7, #40]	; 0x28
+	int i=0;
+ 8000ca2:	2300      	movs	r3, #0
+ 8000ca4:	63bb      	str	r3, [r7, #56]	; 0x38
+
+	char text[] = "      SAMPLE TEXT TO SCROLL";
+ 8000ca6:	4b2f      	ldr	r3, [pc, #188]	; (8000d64 <LCDStringDemo+0xd8>)
+ 8000ca8:	f107 040c 	add.w	r4, r7, #12
+ 8000cac:	461d      	mov	r5, r3
+ 8000cae:	cd0f      	ldmia	r5!, {r0, r1, r2, r3}
+ 8000cb0:	c40f      	stmia	r4!, {r0, r1, r2, r3}
+ 8000cb2:	e895 0007 	ldmia.w	r5, {r0, r1, r2}
+ 8000cb6:	e884 0007 	stmia.w	r4, {r0, r1, r2}
+	char display[6];
+
+	for(int j=0;j<6;j++){
+ 8000cba:	2300      	movs	r3, #0
+ 8000cbc:	637b      	str	r3, [r7, #52]	; 0x34
+ 8000cbe:	e00c      	b.n	8000cda <LCDStringDemo+0x4e>
+		display[j]=text[j];
+ 8000cc0:	f107 020c 	add.w	r2, r7, #12
+ 8000cc4:	6b7b      	ldr	r3, [r7, #52]	; 0x34
+ 8000cc6:	4413      	add	r3, r2
+ 8000cc8:	7819      	ldrb	r1, [r3, #0]
+ 8000cca:	1d3a      	adds	r2, r7, #4
+ 8000ccc:	6b7b      	ldr	r3, [r7, #52]	; 0x34
+ 8000cce:	4413      	add	r3, r2
+ 8000cd0:	460a      	mov	r2, r1
+ 8000cd2:	701a      	strb	r2, [r3, #0]
+	for(int j=0;j<6;j++){
+ 8000cd4:	6b7b      	ldr	r3, [r7, #52]	; 0x34
+ 8000cd6:	3301      	adds	r3, #1
+ 8000cd8:	637b      	str	r3, [r7, #52]	; 0x34
+ 8000cda:	6b7b      	ldr	r3, [r7, #52]	; 0x34
+ 8000cdc:	2b05      	cmp	r3, #5
+ 8000cde:	ddef      	ble.n	8000cc0 <LCDStringDemo+0x34>
+	}
+
+	BSP_LCD_GLASS_Clear();
+ 8000ce0:	f000 fc70 	bl	80015c4 <BSP_LCD_GLASS_Clear>
+//	BSP_LCD_GLASS_DisplayString((uint8_t *)"8:8.888888"); //impossible to write a : or . using this function
+	while(i<=strlen(text)-6){
+ 8000ce4:	e02d      	b.n	8000d42 <LCDStringDemo+0xb6>
+		now = HAL_GetTick();
+ 8000ce6:	f001 fb9f 	bl	8002428 <HAL_GetTick>
+ 8000cea:	62f8      	str	r0, [r7, #44]	; 0x2c
+		if (now - last_ms >= delay_500ms){
+ 8000cec:	6afa      	ldr	r2, [r7, #44]	; 0x2c
+ 8000cee:	6bfb      	ldr	r3, [r7, #60]	; 0x3c
+ 8000cf0:	1ad3      	subs	r3, r2, r3
+ 8000cf2:	6aba      	ldr	r2, [r7, #40]	; 0x28
+ 8000cf4:	429a      	cmp	r2, r3
+ 8000cf6:	d821      	bhi.n	8000d3c <LCDStringDemo+0xb0>
+			i++;
+ 8000cf8:	6bbb      	ldr	r3, [r7, #56]	; 0x38
+ 8000cfa:	3301      	adds	r3, #1
+ 8000cfc:	63bb      	str	r3, [r7, #56]	; 0x38
+			last_ms = now;
+ 8000cfe:	6afb      	ldr	r3, [r7, #44]	; 0x2c
+ 8000d00:	63fb      	str	r3, [r7, #60]	; 0x3c
+
+			for(int j=i;j<6+i;j++){
+ 8000d02:	6bbb      	ldr	r3, [r7, #56]	; 0x38
+ 8000d04:	633b      	str	r3, [r7, #48]	; 0x30
+ 8000d06:	e00e      	b.n	8000d26 <LCDStringDemo+0x9a>
+				display[j-i]=text[j];
+ 8000d08:	6b3a      	ldr	r2, [r7, #48]	; 0x30
+ 8000d0a:	6bbb      	ldr	r3, [r7, #56]	; 0x38
+ 8000d0c:	1ad3      	subs	r3, r2, r3
+ 8000d0e:	f107 010c 	add.w	r1, r7, #12
+ 8000d12:	6b3a      	ldr	r2, [r7, #48]	; 0x30
+ 8000d14:	440a      	add	r2, r1
+ 8000d16:	7812      	ldrb	r2, [r2, #0]
+ 8000d18:	3340      	adds	r3, #64	; 0x40
+ 8000d1a:	443b      	add	r3, r7
+ 8000d1c:	f803 2c3c 	strb.w	r2, [r3, #-60]
+			for(int j=i;j<6+i;j++){
+ 8000d20:	6b3b      	ldr	r3, [r7, #48]	; 0x30
+ 8000d22:	3301      	adds	r3, #1
+ 8000d24:	633b      	str	r3, [r7, #48]	; 0x30
+ 8000d26:	6bbb      	ldr	r3, [r7, #56]	; 0x38
+ 8000d28:	3305      	adds	r3, #5
+ 8000d2a:	6b3a      	ldr	r2, [r7, #48]	; 0x30
+ 8000d2c:	429a      	cmp	r2, r3
+ 8000d2e:	ddeb      	ble.n	8000d08 <LCDStringDemo+0x7c>
+			}
+
+			BSP_LCD_GLASS_Clear();
+ 8000d30:	f000 fc48 	bl	80015c4 <BSP_LCD_GLASS_Clear>
+			BSP_LCD_GLASS_DisplayString((uint8_t *)display);
+ 8000d34:	1d3b      	adds	r3, r7, #4
+ 8000d36:	4618      	mov	r0, r3
+ 8000d38:	f000 fc20 	bl	800157c <BSP_LCD_GLASS_DisplayString>
+		}
+
+		HAL_IWDG_Refresh(&hiwdg);
+ 8000d3c:	480a      	ldr	r0, [pc, #40]	; (8000d68 <LCDStringDemo+0xdc>)
+ 8000d3e:	f001 ffc0 	bl	8002cc2 <HAL_IWDG_Refresh>
+	while(i<=strlen(text)-6){
+ 8000d42:	f107 030c 	add.w	r3, r7, #12
+ 8000d46:	4618      	mov	r0, r3
+ 8000d48:	f7ff fa3e 	bl	80001c8 <strlen>
+ 8000d4c:	4603      	mov	r3, r0
+ 8000d4e:	1f9a      	subs	r2, r3, #6
+ 8000d50:	6bbb      	ldr	r3, [r7, #56]	; 0x38
+ 8000d52:	429a      	cmp	r2, r3
+ 8000d54:	d2c7      	bcs.n	8000ce6 <LCDStringDemo+0x5a>
+	}
+	BSP_LCD_GLASS_Clear();
+ 8000d56:	f000 fc35 	bl	80015c4 <BSP_LCD_GLASS_Clear>
+}
+ 8000d5a:	bf00      	nop
+ 8000d5c:	3740      	adds	r7, #64	; 0x40
+ 8000d5e:	46bd      	mov	sp, r7
+ 8000d60:	bdb0      	pop	{r4, r5, r7, pc}
+ 8000d62:	bf00      	nop
+ 8000d64:	08006818 	.word	0x08006818
+ 8000d68:	200000c0 	.word	0x200000c0
+
+08000d6c <main>:
 /**
   * @brief  The application entry point.
   * @retval int
   */
 int main(void)
 {
- 8000b98:	b580      	push	{r7, lr}
- 8000b9a:	af00      	add	r7, sp, #0
+ 8000d6c:	b580      	push	{r7, lr}
+ 8000d6e:	af00      	add	r7, sp, #0
   /* USER CODE END 1 */
 
   /* MCU Configuration--------------------------------------------------------*/
 
   /* Reset of all peripherals, Initializes the Flash interface and the Systick. */
   HAL_Init();
- 8000b9c:	f001 fbd4 	bl	8002348 <HAL_Init>
+ 8000d70:	f001 faea 	bl	8002348 <HAL_Init>
   /* USER CODE BEGIN Init */
 
   /* USER CODE END Init */
 
   /* Configure the system clock */
   SystemClock_Config();
- 8000ba0:	f000 f824 	bl	8000bec <SystemClock_Config>
+ 8000d74:	f000 f824 	bl	8000dc0 <SystemClock_Config>
 
 /* Configure the peripherals common clocks */
   PeriphCommonClock_Config();
- 8000ba4:	f000 f884 	bl	8000cb0 <PeriphCommonClock_Config>
+ 8000d78:	f000 f884 	bl	8000e84 <PeriphCommonClock_Config>
   /* USER CODE BEGIN SysInit */
 
   /* USER CODE END SysInit */
 
   /* Initialize all configured peripherals */
   MX_GPIO_Init();
- 8000ba8:	f7ff fc98 	bl	80004dc <MX_GPIO_Init>
+ 8000d7c:	f7ff fbae 	bl	80004dc <MX_GPIO_Init>
   MX_I2C1_Init();
- 8000bac:	f7ff fde6 	bl	800077c <MX_I2C1_Init>
+ 8000d80:	f7ff fcfc 	bl	800077c <MX_I2C1_Init>
   MX_I2C2_Init();
- 8000bb0:	f7ff fe24 	bl	80007fc <MX_I2C2_Init>
+ 8000d84:	f7ff fd3a 	bl	80007fc <MX_I2C2_Init>
 //  MX_LCD_Init();
   MX_QUADSPI_Init();
- 8000bb4:	f000 f996 	bl	8000ee4 <MX_QUADSPI_Init>
+ 8000d88:	f000 f8ac 	bl	8000ee4 <MX_QUADSPI_Init>
   MX_SAI1_Init();
- 8000bb8:	f000 fa8c 	bl	80010d4 <MX_SAI1_Init>
+ 8000d8c:	f000 f9a2 	bl	80010d4 <MX_SAI1_Init>
   MX_SPI2_Init();
- 8000bbc:	f000 fbaa 	bl	8001314 <MX_SPI2_Init>
+ 8000d90:	f000 fac0 	bl	8001314 <MX_SPI2_Init>
   MX_USART2_UART_Init();
- 8000bc0:	f001 fb0a 	bl	80021d8 <MX_USART2_UART_Init>
+ 8000d94:	f001 fa20 	bl	80021d8 <MX_USART2_UART_Init>
   MX_RTC_Init();
- 8000bc4:	f000 f9f8 	bl	8000fb8 <MX_RTC_Init>
+ 8000d98:	f000 f90e 	bl	8000fb8 <MX_RTC_Init>
   MX_IWDG_Init();
- 8000bc8:	f7ff fefa 	bl	80009c0 <MX_IWDG_Init>
+ 8000d9c:	f7ff fe10 	bl	80009c0 <MX_IWDG_Init>
   /* USER CODE BEGIN 2 */
   BSP_LCD_GLASS_Init();
- 8000bcc:	f000 fc24 	bl	8001418 <BSP_LCD_GLASS_Init>
+ 8000da0:	f000 fb3a 	bl	8001418 <BSP_LCD_GLASS_Init>
   BSP_LCD_GLASS_Clear();
- 8000bd0:	f000 fcf8 	bl	80015c4 <BSP_LCD_GLASS_Clear>
+ 8000da4:	f000 fc0e 	bl	80015c4 <BSP_LCD_GLASS_Clear>
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
   while (1)
   {
 	  LCDBarDemo();
- 8000bd4:	f000 f896 	bl	8000d04 <LCDBarDemo>
+ 8000da8:	f7ff fef6 	bl	8000b98 <LCDBarDemo>
 	  LCDCharDemo();
- 8000bd8:	f000 f8cc 	bl	8000d74 <LCDCharDemo>
+ 8000dac:	f7ff ff2c 	bl	8000c08 <LCDCharDemo>
 	  LCDStringDemo();
- 8000bdc:	f000 f90c 	bl	8000df8 <LCDStringDemo>
+ 8000db0:	f7ff ff6c 	bl	8000c8c <LCDStringDemo>
 
 	  HAL_IWDG_Refresh(&hiwdg);
- 8000be0:	4801      	ldr	r0, [pc, #4]	; (8000be8 <main+0x50>)
- 8000be2:	f002 f86e 	bl	8002cc2 <HAL_IWDG_Refresh>
+ 8000db4:	4801      	ldr	r0, [pc, #4]	; (8000dbc <main+0x50>)
+ 8000db6:	f001 ff84 	bl	8002cc2 <HAL_IWDG_Refresh>
 	  LCDBarDemo();
- 8000be6:	e7f5      	b.n	8000bd4 <main+0x3c>
- 8000be8:	200000c0 	.word	0x200000c0
+ 8000dba:	e7f5      	b.n	8000da8 <main+0x3c>
+ 8000dbc:	200000c0 	.word	0x200000c0
 
-08000bec <SystemClock_Config>:
+08000dc0 <SystemClock_Config>:
 /**
   * @brief System Clock Configuration
   * @retval None
   */
 void SystemClock_Config(void)
 {
- 8000bec:	b580      	push	{r7, lr}
- 8000bee:	b096      	sub	sp, #88	; 0x58
- 8000bf0:	af00      	add	r7, sp, #0
+ 8000dc0:	b580      	push	{r7, lr}
+ 8000dc2:	b096      	sub	sp, #88	; 0x58
+ 8000dc4:	af00      	add	r7, sp, #0
   RCC_OscInitTypeDef RCC_OscInitStruct = {0};
- 8000bf2:	f107 0314 	add.w	r3, r7, #20
- 8000bf6:	2244      	movs	r2, #68	; 0x44
- 8000bf8:	2100      	movs	r1, #0
- 8000bfa:	4618      	mov	r0, r3
- 8000bfc:	f005 fdf6 	bl	80067ec <memset>
+ 8000dc6:	f107 0314 	add.w	r3, r7, #20
+ 8000dca:	2244      	movs	r2, #68	; 0x44
+ 8000dcc:	2100      	movs	r1, #0
+ 8000dce:	4618      	mov	r0, r3
+ 8000dd0:	f005 fd0c 	bl	80067ec <memset>
   RCC_ClkInitTypeDef RCC_ClkInitStruct = {0};
- 8000c00:	463b      	mov	r3, r7
- 8000c02:	2200      	movs	r2, #0
- 8000c04:	601a      	str	r2, [r3, #0]
- 8000c06:	605a      	str	r2, [r3, #4]
- 8000c08:	609a      	str	r2, [r3, #8]
- 8000c0a:	60da      	str	r2, [r3, #12]
- 8000c0c:	611a      	str	r2, [r3, #16]
+ 8000dd4:	463b      	mov	r3, r7
+ 8000dd6:	2200      	movs	r2, #0
+ 8000dd8:	601a      	str	r2, [r3, #0]
+ 8000dda:	605a      	str	r2, [r3, #4]
+ 8000ddc:	609a      	str	r2, [r3, #8]
+ 8000dde:	60da      	str	r2, [r3, #12]
+ 8000de0:	611a      	str	r2, [r3, #16]
 
   /** Configure the main internal regulator output voltage
   */
   if (HAL_PWREx_ControlVoltageScaling(PWR_REGULATOR_VOLTAGE_SCALE1) != HAL_OK)
- 8000c0e:	f44f 7000 	mov.w	r0, #512	; 0x200
- 8000c12:	f002 fa51 	bl	80030b8 <HAL_PWREx_ControlVoltageScaling>
- 8000c16:	4603      	mov	r3, r0
- 8000c18:	2b00      	cmp	r3, #0
- 8000c1a:	d001      	beq.n	8000c20 <SystemClock_Config+0x34>
+ 8000de2:	f44f 7000 	mov.w	r0, #512	; 0x200
+ 8000de6:	f002 f967 	bl	80030b8 <HAL_PWREx_ControlVoltageScaling>
+ 8000dea:	4603      	mov	r3, r0
+ 8000dec:	2b00      	cmp	r3, #0
+ 8000dee:	d001      	beq.n	8000df4 <SystemClock_Config+0x34>
   {
     Error_Handler();
- 8000c1c:	f000 f95c 	bl	8000ed8 <Error_Handler>
+ 8000df0:	f000 f872 	bl	8000ed8 <Error_Handler>
   }
 
   /** Configure LSE Drive Capability
   */
   HAL_PWR_EnableBkUpAccess();
- 8000c20:	f002 fa2c 	bl	800307c <HAL_PWR_EnableBkUpAccess>
+ 8000df4:	f002 f942 	bl	800307c <HAL_PWR_EnableBkUpAccess>
   __HAL_RCC_LSEDRIVE_CONFIG(RCC_LSEDRIVE_LOW);
- 8000c24:	4b21      	ldr	r3, [pc, #132]	; (8000cac <SystemClock_Config+0xc0>)
- 8000c26:	f8d3 3090 	ldr.w	r3, [r3, #144]	; 0x90
- 8000c2a:	4a20      	ldr	r2, [pc, #128]	; (8000cac <SystemClock_Config+0xc0>)
- 8000c2c:	f023 0318 	bic.w	r3, r3, #24
- 8000c30:	f8c2 3090 	str.w	r3, [r2, #144]	; 0x90
+ 8000df8:	4b21      	ldr	r3, [pc, #132]	; (8000e80 <SystemClock_Config+0xc0>)
+ 8000dfa:	f8d3 3090 	ldr.w	r3, [r3, #144]	; 0x90
+ 8000dfe:	4a20      	ldr	r2, [pc, #128]	; (8000e80 <SystemClock_Config+0xc0>)
+ 8000e00:	f023 0318 	bic.w	r3, r3, #24
+ 8000e04:	f8c2 3090 	str.w	r3, [r2, #144]	; 0x90
 
   /** Initializes the RCC Oscillators according to the specified parameters
   * in the RCC_OscInitTypeDef structure.
   */
   RCC_OscInitStruct.OscillatorType = RCC_OSCILLATORTYPE_HSI|RCC_OSCILLATORTYPE_LSI
- 8000c34:	230e      	movs	r3, #14
- 8000c36:	617b      	str	r3, [r7, #20]
+ 8000e08:	230e      	movs	r3, #14
+ 8000e0a:	617b      	str	r3, [r7, #20]
                               |RCC_OSCILLATORTYPE_LSE;
   RCC_OscInitStruct.LSEState = RCC_LSE_ON;
- 8000c38:	2301      	movs	r3, #1
- 8000c3a:	61fb      	str	r3, [r7, #28]
+ 8000e0c:	2301      	movs	r3, #1
+ 8000e0e:	61fb      	str	r3, [r7, #28]
   RCC_OscInitStruct.HSIState = RCC_HSI_ON;
- 8000c3c:	f44f 7380 	mov.w	r3, #256	; 0x100
- 8000c40:	623b      	str	r3, [r7, #32]
+ 8000e10:	f44f 7380 	mov.w	r3, #256	; 0x100
+ 8000e14:	623b      	str	r3, [r7, #32]
   RCC_OscInitStruct.HSICalibrationValue = RCC_HSICALIBRATION_DEFAULT;
- 8000c42:	2310      	movs	r3, #16
- 8000c44:	627b      	str	r3, [r7, #36]	; 0x24
+ 8000e16:	2310      	movs	r3, #16
+ 8000e18:	627b      	str	r3, [r7, #36]	; 0x24
   RCC_OscInitStruct.LSIState = RCC_LSI_ON;
- 8000c46:	2301      	movs	r3, #1
- 8000c48:	62bb      	str	r3, [r7, #40]	; 0x28
+ 8000e1a:	2301      	movs	r3, #1
+ 8000e1c:	62bb      	str	r3, [r7, #40]	; 0x28
   RCC_OscInitStruct.PLL.PLLState = RCC_PLL_ON;
- 8000c4a:	2302      	movs	r3, #2
- 8000c4c:	63fb      	str	r3, [r7, #60]	; 0x3c
+ 8000e1e:	2302      	movs	r3, #2
+ 8000e20:	63fb      	str	r3, [r7, #60]	; 0x3c
   RCC_OscInitStruct.PLL.PLLSource = RCC_PLLSOURCE_HSI;
- 8000c4e:	2302      	movs	r3, #2
- 8000c50:	643b      	str	r3, [r7, #64]	; 0x40
+ 8000e22:	2302      	movs	r3, #2
+ 8000e24:	643b      	str	r3, [r7, #64]	; 0x40
   RCC_OscInitStruct.PLL.PLLM = 1;
- 8000c52:	2301      	movs	r3, #1
- 8000c54:	647b      	str	r3, [r7, #68]	; 0x44
+ 8000e26:	2301      	movs	r3, #1
+ 8000e28:	647b      	str	r3, [r7, #68]	; 0x44
   RCC_OscInitStruct.PLL.PLLN = 10;
- 8000c56:	230a      	movs	r3, #10
- 8000c58:	64bb      	str	r3, [r7, #72]	; 0x48
+ 8000e2a:	230a      	movs	r3, #10
+ 8000e2c:	64bb      	str	r3, [r7, #72]	; 0x48
   RCC_OscInitStruct.PLL.PLLP = RCC_PLLP_DIV7;
- 8000c5a:	2307      	movs	r3, #7
- 8000c5c:	64fb      	str	r3, [r7, #76]	; 0x4c
+ 8000e2e:	2307      	movs	r3, #7
+ 8000e30:	64fb      	str	r3, [r7, #76]	; 0x4c
   RCC_OscInitStruct.PLL.PLLQ = RCC_PLLQ_DIV2;
- 8000c5e:	2302      	movs	r3, #2
- 8000c60:	653b      	str	r3, [r7, #80]	; 0x50
+ 8000e32:	2302      	movs	r3, #2
+ 8000e34:	653b      	str	r3, [r7, #80]	; 0x50
   RCC_OscInitStruct.PLL.PLLR = RCC_PLLR_DIV2;
- 8000c62:	2302      	movs	r3, #2
- 8000c64:	657b      	str	r3, [r7, #84]	; 0x54
+ 8000e36:	2302      	movs	r3, #2
+ 8000e38:	657b      	str	r3, [r7, #84]	; 0x54
   if (HAL_RCC_OscConfig(&RCC_OscInitStruct) != HAL_OK)
- 8000c66:	f107 0314 	add.w	r3, r7, #20
- 8000c6a:	4618      	mov	r0, r3
- 8000c6c:	f002 fb36 	bl	80032dc <HAL_RCC_OscConfig>
- 8000c70:	4603      	mov	r3, r0
- 8000c72:	2b00      	cmp	r3, #0
- 8000c74:	d001      	beq.n	8000c7a <SystemClock_Config+0x8e>
+ 8000e3a:	f107 0314 	add.w	r3, r7, #20
+ 8000e3e:	4618      	mov	r0, r3
+ 8000e40:	f002 fa4c 	bl	80032dc <HAL_RCC_OscConfig>
+ 8000e44:	4603      	mov	r3, r0
+ 8000e46:	2b00      	cmp	r3, #0
+ 8000e48:	d001      	beq.n	8000e4e <SystemClock_Config+0x8e>
   {
     Error_Handler();
- 8000c76:	f000 f92f 	bl	8000ed8 <Error_Handler>
+ 8000e4a:	f000 f845 	bl	8000ed8 <Error_Handler>
   }
 
   /** Initializes the CPU, AHB and APB buses clocks
   */
   RCC_ClkInitStruct.ClockType = RCC_CLOCKTYPE_HCLK|RCC_CLOCKTYPE_SYSCLK
- 8000c7a:	230f      	movs	r3, #15
- 8000c7c:	603b      	str	r3, [r7, #0]
+ 8000e4e:	230f      	movs	r3, #15
+ 8000e50:	603b      	str	r3, [r7, #0]
                               |RCC_CLOCKTYPE_PCLK1|RCC_CLOCKTYPE_PCLK2;
   RCC_ClkInitStruct.SYSCLKSource = RCC_SYSCLKSOURCE_PLLCLK;
- 8000c7e:	2303      	movs	r3, #3
- 8000c80:	607b      	str	r3, [r7, #4]
+ 8000e52:	2303      	movs	r3, #3
+ 8000e54:	607b      	str	r3, [r7, #4]
   RCC_ClkInitStruct.AHBCLKDivider = RCC_SYSCLK_DIV1;
- 8000c82:	2300      	movs	r3, #0
- 8000c84:	60bb      	str	r3, [r7, #8]
+ 8000e56:	2300      	movs	r3, #0
+ 8000e58:	60bb      	str	r3, [r7, #8]
   RCC_ClkInitStruct.APB1CLKDivider = RCC_HCLK_DIV1;
- 8000c86:	2300      	movs	r3, #0
- 8000c88:	60fb      	str	r3, [r7, #12]
+ 8000e5a:	2300      	movs	r3, #0
+ 8000e5c:	60fb      	str	r3, [r7, #12]
   RCC_ClkInitStruct.APB2CLKDivider = RCC_HCLK_DIV1;
- 8000c8a:	2300      	movs	r3, #0
- 8000c8c:	613b      	str	r3, [r7, #16]
+ 8000e5e:	2300      	movs	r3, #0
+ 8000e60:	613b      	str	r3, [r7, #16]
 
   if (HAL_RCC_ClockConfig(&RCC_ClkInitStruct, FLASH_LATENCY_4) != HAL_OK)
- 8000c8e:	463b      	mov	r3, r7
- 8000c90:	2104      	movs	r1, #4
- 8000c92:	4618      	mov	r0, r3
- 8000c94:	f002 ff0a 	bl	8003aac <HAL_RCC_ClockConfig>
- 8000c98:	4603      	mov	r3, r0
- 8000c9a:	2b00      	cmp	r3, #0
- 8000c9c:	d001      	beq.n	8000ca2 <SystemClock_Config+0xb6>
+ 8000e62:	463b      	mov	r3, r7
+ 8000e64:	2104      	movs	r1, #4
+ 8000e66:	4618      	mov	r0, r3
+ 8000e68:	f002 fe20 	bl	8003aac <HAL_RCC_ClockConfig>
+ 8000e6c:	4603      	mov	r3, r0
+ 8000e6e:	2b00      	cmp	r3, #0
+ 8000e70:	d001      	beq.n	8000e76 <SystemClock_Config+0xb6>
   {
     Error_Handler();
- 8000c9e:	f000 f91b 	bl	8000ed8 <Error_Handler>
+ 8000e72:	f000 f831 	bl	8000ed8 <Error_Handler>
   }
 }
- 8000ca2:	bf00      	nop
- 8000ca4:	3758      	adds	r7, #88	; 0x58
- 8000ca6:	46bd      	mov	sp, r7
- 8000ca8:	bd80      	pop	{r7, pc}
- 8000caa:	bf00      	nop
- 8000cac:	40021000 	.word	0x40021000
+ 8000e76:	bf00      	nop
+ 8000e78:	3758      	adds	r7, #88	; 0x58
+ 8000e7a:	46bd      	mov	sp, r7
+ 8000e7c:	bd80      	pop	{r7, pc}
+ 8000e7e:	bf00      	nop
+ 8000e80:	40021000 	.word	0x40021000
 
-08000cb0 <PeriphCommonClock_Config>:
+08000e84 <PeriphCommonClock_Config>:
 /**
   * @brief Peripherals Common Clock Configuration
   * @retval None
   */
 void PeriphCommonClock_Config(void)
 {
- 8000cb0:	b580      	push	{r7, lr}
- 8000cb2:	b0a2      	sub	sp, #136	; 0x88
- 8000cb4:	af00      	add	r7, sp, #0
+ 8000e84:	b580      	push	{r7, lr}
+ 8000e86:	b0a2      	sub	sp, #136	; 0x88
+ 8000e88:	af00      	add	r7, sp, #0
   RCC_PeriphCLKInitTypeDef PeriphClkInit = {0};
- 8000cb6:	463b      	mov	r3, r7
- 8000cb8:	2288      	movs	r2, #136	; 0x88
- 8000cba:	2100      	movs	r1, #0
- 8000cbc:	4618      	mov	r0, r3
- 8000cbe:	f005 fd95 	bl	80067ec <memset>
+ 8000e8a:	463b      	mov	r3, r7
+ 8000e8c:	2288      	movs	r2, #136	; 0x88
+ 8000e8e:	2100      	movs	r1, #0
+ 8000e90:	4618      	mov	r0, r3
+ 8000e92:	f005 fcab 	bl	80067ec <memset>
 
   /** Initializes the peripherals clock
   */
   PeriphClkInit.PeriphClockSelection = RCC_PERIPHCLK_SAI1;
- 8000cc2:	f44f 6300 	mov.w	r3, #2048	; 0x800
- 8000cc6:	603b      	str	r3, [r7, #0]
+ 8000e96:	f44f 6300 	mov.w	r3, #2048	; 0x800
+ 8000e9a:	603b      	str	r3, [r7, #0]
   PeriphClkInit.Sai1ClockSelection = RCC_SAI1CLKSOURCE_PLLSAI1;
- 8000cc8:	2300      	movs	r3, #0
- 8000cca:	667b      	str	r3, [r7, #100]	; 0x64
+ 8000e9c:	2300      	movs	r3, #0
+ 8000e9e:	667b      	str	r3, [r7, #100]	; 0x64
   PeriphClkInit.PLLSAI1.PLLSAI1Source = RCC_PLLSOURCE_HSI;
- 8000ccc:	2302      	movs	r3, #2
- 8000cce:	607b      	str	r3, [r7, #4]
+ 8000ea0:	2302      	movs	r3, #2
+ 8000ea2:	607b      	str	r3, [r7, #4]
   PeriphClkInit.PLLSAI1.PLLSAI1M = 1;
- 8000cd0:	2301      	movs	r3, #1
- 8000cd2:	60bb      	str	r3, [r7, #8]
+ 8000ea4:	2301      	movs	r3, #1
+ 8000ea6:	60bb      	str	r3, [r7, #8]
   PeriphClkInit.PLLSAI1.PLLSAI1N = 8;
- 8000cd4:	2308      	movs	r3, #8
- 8000cd6:	60fb      	str	r3, [r7, #12]
+ 8000ea8:	2308      	movs	r3, #8
+ 8000eaa:	60fb      	str	r3, [r7, #12]
   PeriphClkInit.PLLSAI1.PLLSAI1P = RCC_PLLP_DIV7;
- 8000cd8:	2307      	movs	r3, #7
- 8000cda:	613b      	str	r3, [r7, #16]
+ 8000eac:	2307      	movs	r3, #7
+ 8000eae:	613b      	str	r3, [r7, #16]
   PeriphClkInit.PLLSAI1.PLLSAI1Q = RCC_PLLQ_DIV2;
- 8000cdc:	2302      	movs	r3, #2
- 8000cde:	617b      	str	r3, [r7, #20]
+ 8000eb0:	2302      	movs	r3, #2
+ 8000eb2:	617b      	str	r3, [r7, #20]
   PeriphClkInit.PLLSAI1.PLLSAI1R = RCC_PLLR_DIV2;
- 8000ce0:	2302      	movs	r3, #2
- 8000ce2:	61bb      	str	r3, [r7, #24]
+ 8000eb4:	2302      	movs	r3, #2
+ 8000eb6:	61bb      	str	r3, [r7, #24]
   PeriphClkInit.PLLSAI1.PLLSAI1ClockOut = RCC_PLLSAI1_SAI1CLK;
- 8000ce4:	f44f 3380 	mov.w	r3, #65536	; 0x10000
- 8000ce8:	61fb      	str	r3, [r7, #28]
+ 8000eb8:	f44f 3380 	mov.w	r3, #65536	; 0x10000
+ 8000ebc:	61fb      	str	r3, [r7, #28]
   if (HAL_RCCEx_PeriphCLKConfig(&PeriphClkInit) != HAL_OK)
- 8000cea:	463b      	mov	r3, r7
- 8000cec:	4618      	mov	r0, r3
- 8000cee:	f003 f8e3 	bl	8003eb8 <HAL_RCCEx_PeriphCLKConfig>
- 8000cf2:	4603      	mov	r3, r0
- 8000cf4:	2b00      	cmp	r3, #0
- 8000cf6:	d001      	beq.n	8000cfc <PeriphCommonClock_Config+0x4c>
+ 8000ebe:	463b      	mov	r3, r7
+ 8000ec0:	4618      	mov	r0, r3
+ 8000ec2:	f002 fff9 	bl	8003eb8 <HAL_RCCEx_PeriphCLKConfig>
+ 8000ec6:	4603      	mov	r3, r0
+ 8000ec8:	2b00      	cmp	r3, #0
+ 8000eca:	d001      	beq.n	8000ed0 <PeriphCommonClock_Config+0x4c>
   {
     Error_Handler();
- 8000cf8:	f000 f8ee 	bl	8000ed8 <Error_Handler>
+ 8000ecc:	f000 f804 	bl	8000ed8 <Error_Handler>
   }
 }
- 8000cfc:	bf00      	nop
- 8000cfe:	3788      	adds	r7, #136	; 0x88
- 8000d00:	46bd      	mov	sp, r7
- 8000d02:	bd80      	pop	{r7, pc}
-
-08000d04 <LCDBarDemo>:
-
-/* USER CODE BEGIN 4 */
-void LCDBarDemo(){
- 8000d04:	b580      	push	{r7, lr}
- 8000d06:	b084      	sub	sp, #16
- 8000d08:	af00      	add	r7, sp, #0
-	uint32_t last_ms=HAL_GetTick();
- 8000d0a:	f001 fb8d 	bl	8002428 <HAL_GetTick>
- 8000d0e:	60f8      	str	r0, [r7, #12]
-	uint32_t now=last_ms;
- 8000d10:	68fb      	ldr	r3, [r7, #12]
- 8000d12:	607b      	str	r3, [r7, #4]
-	uint32_t delay_500ms=500;
- 8000d14:	f44f 73fa 	mov.w	r3, #500	; 0x1f4
- 8000d18:	603b      	str	r3, [r7, #0]
-	int i=0;
- 8000d1a:	2300      	movs	r3, #0
- 8000d1c:	60bb      	str	r3, [r7, #8]
-
-	while(!(i>LCD_BAR_3)){
- 8000d1e:	e01e      	b.n	8000d5e <LCDBarDemo+0x5a>
-		now = HAL_GetTick();
- 8000d20:	f001 fb82 	bl	8002428 <HAL_GetTick>
- 8000d24:	6078      	str	r0, [r7, #4]
-		BSP_LCD_GLASS_Clear();
- 8000d26:	f000 fc4d 	bl	80015c4 <BSP_LCD_GLASS_Clear>
-		BSP_LCD_GLASS_DisplayBar(i);
- 8000d2a:	68bb      	ldr	r3, [r7, #8]
- 8000d2c:	4618      	mov	r0, r3
- 8000d2e:	f000 fbad 	bl	800148c <BSP_LCD_GLASS_DisplayBar>
-
-		if (now - last_ms >= 2*delay_500ms){
- 8000d32:	687a      	ldr	r2, [r7, #4]
- 8000d34:	68fb      	ldr	r3, [r7, #12]
- 8000d36:	1ad2      	subs	r2, r2, r3
- 8000d38:	683b      	ldr	r3, [r7, #0]
- 8000d3a:	005b      	lsls	r3, r3, #1
- 8000d3c:	429a      	cmp	r2, r3
- 8000d3e:	d30b      	bcc.n	8000d58 <LCDBarDemo+0x54>
-			if(i==0){
- 8000d40:	68bb      	ldr	r3, [r7, #8]
- 8000d42:	2b00      	cmp	r3, #0
- 8000d44:	d103      	bne.n	8000d4e <LCDBarDemo+0x4a>
-				i+=1;
- 8000d46:	68bb      	ldr	r3, [r7, #8]
- 8000d48:	3301      	adds	r3, #1
- 8000d4a:	60bb      	str	r3, [r7, #8]
- 8000d4c:	e002      	b.n	8000d54 <LCDBarDemo+0x50>
-			}
-			else{
-				i=i<<1;
- 8000d4e:	68bb      	ldr	r3, [r7, #8]
- 8000d50:	005b      	lsls	r3, r3, #1
- 8000d52:	60bb      	str	r3, [r7, #8]
-			}
-			last_ms = now;
- 8000d54:	687b      	ldr	r3, [r7, #4]
- 8000d56:	60fb      	str	r3, [r7, #12]
-			}
-		HAL_IWDG_Refresh(&hiwdg);
- 8000d58:	4805      	ldr	r0, [pc, #20]	; (8000d70 <LCDBarDemo+0x6c>)
- 8000d5a:	f001 ffb2 	bl	8002cc2 <HAL_IWDG_Refresh>
-	while(!(i>LCD_BAR_3)){
- 8000d5e:	68bb      	ldr	r3, [r7, #8]
- 8000d60:	2b08      	cmp	r3, #8
- 8000d62:	dddd      	ble.n	8000d20 <LCDBarDemo+0x1c>
-		}
-	BSP_LCD_GLASS_Clear();
- 8000d64:	f000 fc2e 	bl	80015c4 <BSP_LCD_GLASS_Clear>
-}
- 8000d68:	bf00      	nop
- 8000d6a:	3710      	adds	r7, #16
- 8000d6c:	46bd      	mov	sp, r7
- 8000d6e:	bd80      	pop	{r7, pc}
- 8000d70:	200000c0 	.word	0x200000c0
-
-08000d74 <LCDCharDemo>:
-
-void LCDCharDemo(){
- 8000d74:	b580      	push	{r7, lr}
- 8000d76:	b084      	sub	sp, #16
- 8000d78:	af00      	add	r7, sp, #0
-	uint32_t last_ms=HAL_GetTick();
- 8000d7a:	f001 fb55 	bl	8002428 <HAL_GetTick>
- 8000d7e:	60f8      	str	r0, [r7, #12]
-	uint32_t now=last_ms;
- 8000d80:	68fb      	ldr	r3, [r7, #12]
- 8000d82:	607b      	str	r3, [r7, #4]
-	uint32_t delay_500ms=500;
- 8000d84:	f44f 73fa 	mov.w	r3, #500	; 0x1f4
- 8000d88:	603b      	str	r3, [r7, #0]
-	int i=0;
- 8000d8a:	2300      	movs	r3, #0
- 8000d8c:	60bb      	str	r3, [r7, #8]
-
-	BSP_LCD_GLASS_Clear();
- 8000d8e:	f000 fc19 	bl	80015c4 <BSP_LCD_GLASS_Clear>
-
-	while(!(i>LCD_DIGIT_POSITION_6)){
- 8000d92:	e023      	b.n	8000ddc <LCDCharDemo+0x68>
-		now = HAL_GetTick();
- 8000d94:	f001 fb48 	bl	8002428 <HAL_GetTick>
- 8000d98:	6078      	str	r0, [r7, #4]
-
-		if(i<=LCD_DIGIT_POSITION_4){
- 8000d9a:	68bb      	ldr	r3, [r7, #8]
- 8000d9c:	2b03      	cmp	r3, #3
- 8000d9e:	dc07      	bgt.n	8000db0 <LCDCharDemo+0x3c>
-			BSP_LCD_GLASS_DisplayChar((uint8_t *)"8", POINT_ON, DOUBLEPOINT_ON, i);
- 8000da0:	68bb      	ldr	r3, [r7, #8]
- 8000da2:	b2db      	uxtb	r3, r3
- 8000da4:	2201      	movs	r2, #1
- 8000da6:	2101      	movs	r1, #1
- 8000da8:	4811      	ldr	r0, [pc, #68]	; (8000df0 <LCDCharDemo+0x7c>)
- 8000daa:	f000 fbcb 	bl	8001544 <BSP_LCD_GLASS_DisplayChar>
- 8000dae:	e006      	b.n	8000dbe <LCDCharDemo+0x4a>
-		}
-		else{
-			BSP_LCD_GLASS_DisplayChar((uint8_t *)"8", POINT_OFF, DOUBLEPOINT_OFF, i); //in this moment point and double point display bars
- 8000db0:	68bb      	ldr	r3, [r7, #8]
- 8000db2:	b2db      	uxtb	r3, r3
- 8000db4:	2200      	movs	r2, #0
- 8000db6:	2100      	movs	r1, #0
- 8000db8:	480d      	ldr	r0, [pc, #52]	; (8000df0 <LCDCharDemo+0x7c>)
- 8000dba:	f000 fbc3 	bl	8001544 <BSP_LCD_GLASS_DisplayChar>
-		}
-
-
-		if (now - last_ms >= 2*delay_500ms){
- 8000dbe:	687a      	ldr	r2, [r7, #4]
- 8000dc0:	68fb      	ldr	r3, [r7, #12]
- 8000dc2:	1ad2      	subs	r2, r2, r3
- 8000dc4:	683b      	ldr	r3, [r7, #0]
- 8000dc6:	005b      	lsls	r3, r3, #1
- 8000dc8:	429a      	cmp	r2, r3
- 8000dca:	d304      	bcc.n	8000dd6 <LCDCharDemo+0x62>
-			i++;
- 8000dcc:	68bb      	ldr	r3, [r7, #8]
- 8000dce:	3301      	adds	r3, #1
- 8000dd0:	60bb      	str	r3, [r7, #8]
-			last_ms = now;
- 8000dd2:	687b      	ldr	r3, [r7, #4]
- 8000dd4:	60fb      	str	r3, [r7, #12]
-			}
-		HAL_IWDG_Refresh(&hiwdg);
- 8000dd6:	4807      	ldr	r0, [pc, #28]	; (8000df4 <LCDCharDemo+0x80>)
- 8000dd8:	f001 ff73 	bl	8002cc2 <HAL_IWDG_Refresh>
-	while(!(i>LCD_DIGIT_POSITION_6)){
- 8000ddc:	68bb      	ldr	r3, [r7, #8]
- 8000dde:	2b05      	cmp	r3, #5
- 8000de0:	ddd8      	ble.n	8000d94 <LCDCharDemo+0x20>
-	}
-	BSP_LCD_GLASS_Clear();
- 8000de2:	f000 fbef 	bl	80015c4 <BSP_LCD_GLASS_Clear>
-}
- 8000de6:	bf00      	nop
- 8000de8:	3710      	adds	r7, #16
- 8000dea:	46bd      	mov	sp, r7
- 8000dec:	bd80      	pop	{r7, pc}
- 8000dee:	bf00      	nop
- 8000df0:	08006814 	.word	0x08006814
- 8000df4:	200000c0 	.word	0x200000c0
-
-08000df8 <LCDStringDemo>:
-
-void LCDStringDemo(){
- 8000df8:	b5b0      	push	{r4, r5, r7, lr}
- 8000dfa:	b090      	sub	sp, #64	; 0x40
- 8000dfc:	af00      	add	r7, sp, #0
-	uint32_t last_ms=HAL_GetTick();
- 8000dfe:	f001 fb13 	bl	8002428 <HAL_GetTick>
- 8000e02:	63f8      	str	r0, [r7, #60]	; 0x3c
-	uint32_t now=last_ms;
- 8000e04:	6bfb      	ldr	r3, [r7, #60]	; 0x3c
- 8000e06:	62fb      	str	r3, [r7, #44]	; 0x2c
-	uint32_t delay_500ms=500;
- 8000e08:	f44f 73fa 	mov.w	r3, #500	; 0x1f4
- 8000e0c:	62bb      	str	r3, [r7, #40]	; 0x28
-	int i=0;
- 8000e0e:	2300      	movs	r3, #0
- 8000e10:	63bb      	str	r3, [r7, #56]	; 0x38
-
-	char text[] = "      SAMPLE TEXT TO SCROLL";
- 8000e12:	4b2f      	ldr	r3, [pc, #188]	; (8000ed0 <LCDStringDemo+0xd8>)
- 8000e14:	f107 040c 	add.w	r4, r7, #12
- 8000e18:	461d      	mov	r5, r3
- 8000e1a:	cd0f      	ldmia	r5!, {r0, r1, r2, r3}
- 8000e1c:	c40f      	stmia	r4!, {r0, r1, r2, r3}
- 8000e1e:	e895 0007 	ldmia.w	r5, {r0, r1, r2}
- 8000e22:	e884 0007 	stmia.w	r4, {r0, r1, r2}
-	char display[6];
-
-	for(int j=0;j<6;j++){
- 8000e26:	2300      	movs	r3, #0
- 8000e28:	637b      	str	r3, [r7, #52]	; 0x34
- 8000e2a:	e00c      	b.n	8000e46 <LCDStringDemo+0x4e>
-		display[j]=text[j];
- 8000e2c:	f107 020c 	add.w	r2, r7, #12
- 8000e30:	6b7b      	ldr	r3, [r7, #52]	; 0x34
- 8000e32:	4413      	add	r3, r2
- 8000e34:	7819      	ldrb	r1, [r3, #0]
- 8000e36:	1d3a      	adds	r2, r7, #4
- 8000e38:	6b7b      	ldr	r3, [r7, #52]	; 0x34
- 8000e3a:	4413      	add	r3, r2
- 8000e3c:	460a      	mov	r2, r1
- 8000e3e:	701a      	strb	r2, [r3, #0]
-	for(int j=0;j<6;j++){
- 8000e40:	6b7b      	ldr	r3, [r7, #52]	; 0x34
- 8000e42:	3301      	adds	r3, #1
- 8000e44:	637b      	str	r3, [r7, #52]	; 0x34
- 8000e46:	6b7b      	ldr	r3, [r7, #52]	; 0x34
- 8000e48:	2b05      	cmp	r3, #5
- 8000e4a:	ddef      	ble.n	8000e2c <LCDStringDemo+0x34>
-	}
-
-	BSP_LCD_GLASS_Clear();
- 8000e4c:	f000 fbba 	bl	80015c4 <BSP_LCD_GLASS_Clear>
-//	BSP_LCD_GLASS_DisplayString((uint8_t *)"8:8.888888"); //impossible to write a : or . using this function
-	while(i<=strlen(text)-6){
- 8000e50:	e02d      	b.n	8000eae <LCDStringDemo+0xb6>
-		now = HAL_GetTick();
- 8000e52:	f001 fae9 	bl	8002428 <HAL_GetTick>
- 8000e56:	62f8      	str	r0, [r7, #44]	; 0x2c
-		if (now - last_ms >= delay_500ms){
- 8000e58:	6afa      	ldr	r2, [r7, #44]	; 0x2c
- 8000e5a:	6bfb      	ldr	r3, [r7, #60]	; 0x3c
- 8000e5c:	1ad3      	subs	r3, r2, r3
- 8000e5e:	6aba      	ldr	r2, [r7, #40]	; 0x28
- 8000e60:	429a      	cmp	r2, r3
- 8000e62:	d821      	bhi.n	8000ea8 <LCDStringDemo+0xb0>
-			i++;
- 8000e64:	6bbb      	ldr	r3, [r7, #56]	; 0x38
- 8000e66:	3301      	adds	r3, #1
- 8000e68:	63bb      	str	r3, [r7, #56]	; 0x38
-			last_ms = now;
- 8000e6a:	6afb      	ldr	r3, [r7, #44]	; 0x2c
- 8000e6c:	63fb      	str	r3, [r7, #60]	; 0x3c
-
-			for(int j=i;j<6+i;j++){
- 8000e6e:	6bbb      	ldr	r3, [r7, #56]	; 0x38
- 8000e70:	633b      	str	r3, [r7, #48]	; 0x30
- 8000e72:	e00e      	b.n	8000e92 <LCDStringDemo+0x9a>
-				display[j-i]=text[j];
- 8000e74:	6b3a      	ldr	r2, [r7, #48]	; 0x30
- 8000e76:	6bbb      	ldr	r3, [r7, #56]	; 0x38
- 8000e78:	1ad3      	subs	r3, r2, r3
- 8000e7a:	f107 010c 	add.w	r1, r7, #12
- 8000e7e:	6b3a      	ldr	r2, [r7, #48]	; 0x30
- 8000e80:	440a      	add	r2, r1
- 8000e82:	7812      	ldrb	r2, [r2, #0]
- 8000e84:	3340      	adds	r3, #64	; 0x40
- 8000e86:	443b      	add	r3, r7
- 8000e88:	f803 2c3c 	strb.w	r2, [r3, #-60]
-			for(int j=i;j<6+i;j++){
- 8000e8c:	6b3b      	ldr	r3, [r7, #48]	; 0x30
- 8000e8e:	3301      	adds	r3, #1
- 8000e90:	633b      	str	r3, [r7, #48]	; 0x30
- 8000e92:	6bbb      	ldr	r3, [r7, #56]	; 0x38
- 8000e94:	3305      	adds	r3, #5
- 8000e96:	6b3a      	ldr	r2, [r7, #48]	; 0x30
- 8000e98:	429a      	cmp	r2, r3
- 8000e9a:	ddeb      	ble.n	8000e74 <LCDStringDemo+0x7c>
-			}
-
-			BSP_LCD_GLASS_Clear();
- 8000e9c:	f000 fb92 	bl	80015c4 <BSP_LCD_GLASS_Clear>
-			BSP_LCD_GLASS_DisplayString((uint8_t *)display);
- 8000ea0:	1d3b      	adds	r3, r7, #4
- 8000ea2:	4618      	mov	r0, r3
- 8000ea4:	f000 fb6a 	bl	800157c <BSP_LCD_GLASS_DisplayString>
-		}
-
-		HAL_IWDG_Refresh(&hiwdg);
- 8000ea8:	480a      	ldr	r0, [pc, #40]	; (8000ed4 <LCDStringDemo+0xdc>)
- 8000eaa:	f001 ff0a 	bl	8002cc2 <HAL_IWDG_Refresh>
-	while(i<=strlen(text)-6){
- 8000eae:	f107 030c 	add.w	r3, r7, #12
- 8000eb2:	4618      	mov	r0, r3
- 8000eb4:	f7ff f988 	bl	80001c8 <strlen>
- 8000eb8:	4603      	mov	r3, r0
- 8000eba:	1f9a      	subs	r2, r3, #6
- 8000ebc:	6bbb      	ldr	r3, [r7, #56]	; 0x38
- 8000ebe:	429a      	cmp	r2, r3
- 8000ec0:	d2c7      	bcs.n	8000e52 <LCDStringDemo+0x5a>
-	}
-	BSP_LCD_GLASS_Clear();
- 8000ec2:	f000 fb7f 	bl	80015c4 <BSP_LCD_GLASS_Clear>
-}
- 8000ec6:	bf00      	nop
- 8000ec8:	3740      	adds	r7, #64	; 0x40
- 8000eca:	46bd      	mov	sp, r7
- 8000ecc:	bdb0      	pop	{r4, r5, r7, pc}
- 8000ece:	bf00      	nop
- 8000ed0:	08006818 	.word	0x08006818
- 8000ed4:	200000c0 	.word	0x200000c0
+ 8000ed0:	bf00      	nop
+ 8000ed2:	3788      	adds	r7, #136	; 0x88
+ 8000ed4:	46bd      	mov	sp, r7
+ 8000ed6:	bd80      	pop	{r7, pc}
 
 08000ed8 <Error_Handler>:
 /**
@@ -5223,7 +5226,7 @@ LoopFillZerobss:
  8002322:	f004 fa3f 	bl	80067a4 <__libc_init_array>
 /* Call the application's entry point.*/
 	bl	main
- 8002326:	f7fe fc37 	bl	8000b98 <main>
+ 8002326:	f7fe fd21 	bl	8000d6c <main>
 
 0800232a <LoopForever>:
 

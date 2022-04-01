@@ -1,3 +1,6 @@
 ../Core/Src/lcd.c:30:6:MX_LCD_Init	8	static
 ../Core/Src/lcd.c:63:6:HAL_LCD_MspInit	192	static
 ../Core/Src/lcd.c:160:6:HAL_LCD_MspDeInit	16	static
+../Core/Src/lcd.c:222:6:LCDBarDemo	24	static
+../Core/Src/lcd.c:247:6:LCDCharDemo	24	static
+../Core/Src/lcd.c:275:6:LCDStringDemo	80	static
