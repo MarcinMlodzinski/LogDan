@@ -62,7 +62,7 @@ void PeriphCommonClock_Config(void);
 
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
-
+void LCDBarDemo();
 /* USER CODE END 0 */
 
 /**
@@ -108,43 +108,13 @@ int main(void)
   /* USER CODE BEGIN 2 */
   BSP_LCD_GLASS_Init();
   BSP_LCD_GLASS_Clear();
-
-  uint32_t last_ms=HAL_GetTick();
-  uint32_t now=last_ms;
-  uint32_t delay_500ms=500;
-  int i=0;
   /* USER CODE END 2 */
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
   while (1)
   {
-	  now = HAL_GetTick();
-
-	  //LCD bar demo starts
-	  if(i==0){
-		  BSP_LCD_GLASS_Clear();
-		  BSP_LCD_GLASS_DisplayBar(i);
-	  }
-
-	  if (now - last_ms >= 2*delay_500ms){
-		  if(i==0){
-			  i+=1;
-		  }
-		  else{
-			  i=i<<1;
-		  }
-		  BSP_LCD_GLASS_Clear();
-		  BSP_LCD_GLASS_DisplayBar(i);
-		  last_ms = now;
-	  }
-
-	  if(i>LCD_BAR_3){
-		  i=0;
-		  BSP_LCD_GLASS_Clear();
-	  }
-	  //LCD bar demo ends
-
+	  LCDBarDemo();
 
 	  HAL_IWDG_Refresh(&hiwdg);
 	  /* USER CODE END WHILE */
@@ -236,6 +206,30 @@ void PeriphCommonClock_Config(void)
 }
 
 /* USER CODE BEGIN 4 */
+void LCDBarDemo(){
+	uint32_t last_ms=HAL_GetTick();
+	uint32_t now=last_ms;
+	uint32_t delay_500ms=500;
+	int i=0;
+
+	while(!(i>LCD_BAR_3)){
+		now = HAL_GetTick();
+		BSP_LCD_GLASS_Clear();
+		BSP_LCD_GLASS_DisplayBar(i);
+
+		if (now - last_ms >= 2*delay_500ms){
+			if(i==0){
+				i+=1;
+			}
+			else{
+				i=i<<1;
+			}
+			last_ms = now;
+			}
+		HAL_IWDG_Refresh(&hiwdg);
+		}
+	BSP_LCD_GLASS_Clear();
+}
 /* USER CODE END 4 */
 
 /**
