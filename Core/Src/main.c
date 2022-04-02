@@ -107,14 +107,51 @@ int main(void)
   BSP_LCD_GLASS_Init();
   BSP_LCD_GLASS_Clear();
   /* USER CODE END 2 */
+  uint32_t last_ms=HAL_GetTick();
+  	uint32_t now=last_ms;
+  	uint32_t delay_500ms=500;
+
+  	char text[50];
+  	char display[6];
+  	RTC_TimeTypeDef RtcTime;
+  	RTC_DateTypeDef RtcDate;
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
   while (1)
-  {
-	  LCDBarDemo();
-	  LCDCharDemo();
-	  LCDStringDemo();
+  {  	int i=0;
+
+//	  LCDBarDemo();
+//	  LCDCharDemo();
+//	  LCDStringDemo();
+	  HAL_RTC_GetTime(&hrtc, &RtcTime, RTC_FORMAT_BIN);
+	  HAL_RTC_GetDate(&hrtc, &RtcDate, RTC_FORMAT_BIN);
+	  sprintf((char*)text, "      Date: %02d.%02d.20%02d Time: %02d:%02d:%02d",
+			  RtcDate.Date, RtcDate.Month, RtcDate.Year, RtcTime.Hours, RtcTime.Minutes, RtcTime.Seconds);
+
+	  	for(int j=0;j<6;j++){
+	  		display[j]=text[j];
+	  	}
+
+	  	BSP_LCD_GLASS_Clear();
+	  //	BSP_LCD_GLASS_DisplayString((uint8_t *)"8:8.888888"); //impossible to write a : or . using this function
+	  	while(i<=strlen(text)-6){
+	  		now = HAL_GetTick();
+	  		if (now - last_ms >= delay_500ms){
+	  			i++;
+	  			last_ms = now;
+
+	  			for(int j=i;j<6+i;j++){
+	  				display[j-i]=text[j];
+	  			}
+
+	  			BSP_LCD_GLASS_Clear();
+	  			BSP_LCD_GLASS_DisplayString((uint8_t *)display);
+	  		}
+
+	  		HAL_IWDG_Refresh(&hiwdg);
+	  	}
+	  	BSP_LCD_GLASS_Clear();
 
 	  HAL_IWDG_Refresh(&hiwdg);
 	  /* USER CODE END WHILE */
