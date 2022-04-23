@@ -31,6 +31,8 @@
 /* USER CODE BEGIN Includes */
 #include "stdbool.h"
 #include "string.h"
+#include "lfs.h"
+#include "stm32l476g_discovery_qspi.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -50,17 +52,40 @@
 /* Private variables ---------------------------------------------------------*/
 
 /* USER CODE BEGIN PV */
-
+// variables used by the filesystem
+lfs_t lfs;
+lfs_file_t file;
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
 void SystemClock_Config(void);
 void PeriphCommonClock_Config(void);
 /* USER CODE BEGIN PFP */
+int block_device_read(const struct lfs_config *c, lfs_block_t block, lfs_off_t off, void *buffer, lfs_size_t size);
+int block_device_prog(const struct lfs_config *c, lfs_block_t block, lfs_off_t off, const void *buffer, lfs_size_t size);
+int block_device_erase(const struct lfs_config *c, lfs_block_t block);
+int block_device_sync(const struct lfs_config *c);
 /* USER CODE END PFP */
 
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
+// configuration of the filesystem is provided by this struct
+const struct lfs_config cfg = {
+    // block device operations
+    .read  = block_device_read,
+    .prog  = block_device_prog,
+    .erase = block_device_erase,
+    .sync  = block_device_sync,
+
+    // block device configuration
+    .read_size = 16,
+    .prog_size = 16,
+    .block_size = 4096,
+    .block_count = 4096,
+    .cache_size = 16,
+    .lookahead_size = 16,
+    .block_cycles = 500,
+};
 /* USER CODE END 0 */
 
 /**
@@ -106,15 +131,40 @@ int main(void)
   /* USER CODE BEGIN 2 */
   BSP_LCD_GLASS_Init();
   BSP_LCD_GLASS_Clear();
+  BSP_QSPI_Init();
   /* USER CODE END 2 */
   uint32_t last_ms=HAL_GetTick();
   	uint32_t now=last_ms;
   	uint32_t delay_500ms=500;
   	int i=0;
   	char text[50];
+  	char test_text[]="please work";
+  	char test_text2[]="AAAa aAAAaa";
   	char display[6];
   	RTC_TimeTypeDef RtcTime;
   	RTC_DateTypeDef RtcDate;
+
+  	int err = lfs_mount(&lfs, &cfg);
+
+  	if (err){
+  		lfs_format(&lfs, &cfg);
+  		lfs_mount(&lfs, &cfg);
+  	}
+
+
+
+  	lfs_file_open(&lfs, &file, "file", LFS_O_RDWR | LFS_O_CREAT);
+  	lfs_file_rewind(&lfs, &file);
+  	  	lfs_file_read(&lfs, &file, &test_text, sizeof(test_text));
+  	  	lfs_file_close(&lfs, &file);
+
+  	  lfs_file_open(&lfs, &file, "file", LFS_O_RDWR | LFS_O_CREAT);
+  	    	  	lfs_file_rewind(&lfs, &file);
+  	    	  	lfs_file_write(&lfs, &file, &test_text2, sizeof(test_text2));
+  	    	  	lfs_file_close(&lfs, &file);
+
+
+
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
@@ -131,23 +181,19 @@ int main(void)
 	  sprintf((char*)text, "Date %02d-%02d-20%02d Time %02d-%02d-%02d ",
 			  RtcDate.Date, RtcDate.Month, RtcDate.Year, RtcTime.Hours, RtcTime.Minutes, RtcTime.Seconds);
 
-//	  	for(int j=0;j<6;j++){
-//	  		display[j]=text[j];
-//	  	}
-
 	  //	BSP_LCD_GLASS_DisplayString((uint8_t *)"8:8.888888"); //impossible to write a : or . using this function
-	  	if(i<=strlen(text)){
+	  	if(i<=strlen(test_text)){
 	  		if (now - last_ms >= delay_500ms){
 	  			last_ms = now;
 
 	  			for(int j=i-6;j<i;j++){
 	  				if(j<0)
 	  				{
-	  					display[j-i+6]=text[strlen(text)+j];
+	  					display[j-i+6]=test_text[strlen(test_text)+j];
 	  				}
 	  				else
 	  				{
-		  				display[j-i+6]=text[j];
+		  				display[j-i+6]=test_text[j];
 
 	  				}
 	  			}
@@ -253,7 +299,31 @@ void PeriphCommonClock_Config(void)
 }
 
 /* USER CODE BEGIN 4 */
+int block_device_read(const struct lfs_config *c, lfs_block_t block, lfs_off_t off, void *buffer, lfs_size_t size)
+{
+//	W25X_Read((uint8_t*)buffer, (block * c->block_size + off), size);
+	BSP_QSPI_Read((uint8_t*)buffer, (block * c->block_size + off), size);
+	return 0;
+}
 
+int block_device_prog(const struct lfs_config *c, lfs_block_t block, lfs_off_t off, const void *buffer, lfs_size_t size)
+{
+//	W25X_Write_NoCheck((uint8_t*)buffer, (block * c->block_size + off), size);
+	BSP_QSPI_Write((uint8_t*)buffer, (block * c->block_size + off), size);
+	return 0;
+}
+
+int block_device_erase(const struct lfs_config *c, lfs_block_t block)
+{
+//	W25X_Erase_Sector(block * c->block_size);
+	BSP_QSPI_Erase_Block(block * c->block_size);
+	return 0;
+}
+
+int block_device_sync(const struct lfs_config *c)
+{
+	return 0;
+}
 /* USER CODE END 4 */
 
 /**

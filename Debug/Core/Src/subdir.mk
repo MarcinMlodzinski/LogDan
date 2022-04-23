@@ -9,6 +9,8 @@ C_SRCS += \
 ../Core/Src/i2c.c \
 ../Core/Src/iwdg.c \
 ../Core/Src/lcd.c \
+../Core/Src/lfs.c \
+../Core/Src/lfs_util.c \
 ../Core/Src/main.c \
 ../Core/Src/quadspi.c \
 ../Core/Src/rtc.c \
@@ -16,6 +18,7 @@ C_SRCS += \
 ../Core/Src/spi.c \
 ../Core/Src/stm32l476g_discovery.c \
 ../Core/Src/stm32l476g_discovery_glass_lcd.c \
+../Core/Src/stm32l476g_discovery_qspi.c \
 ../Core/Src/stm32l4xx_hal_msp.c \
 ../Core/Src/stm32l4xx_it.c \
 ../Core/Src/syscalls.c \
@@ -28,6 +31,8 @@ OBJS += \
 ./Core/Src/i2c.o \
 ./Core/Src/iwdg.o \
 ./Core/Src/lcd.o \
+./Core/Src/lfs.o \
+./Core/Src/lfs_util.o \
 ./Core/Src/main.o \
 ./Core/Src/quadspi.o \
 ./Core/Src/rtc.o \
@@ -35,6 +40,7 @@ OBJS += \
 ./Core/Src/spi.o \
 ./Core/Src/stm32l476g_discovery.o \
 ./Core/Src/stm32l476g_discovery_glass_lcd.o \
+./Core/Src/stm32l476g_discovery_qspi.o \
 ./Core/Src/stm32l4xx_hal_msp.o \
 ./Core/Src/stm32l4xx_it.o \
 ./Core/Src/syscalls.o \
@@ -47,6 +53,8 @@ C_DEPS += \
 ./Core/Src/i2c.d \
 ./Core/Src/iwdg.d \
 ./Core/Src/lcd.d \
+./Core/Src/lfs.d \
+./Core/Src/lfs_util.d \
 ./Core/Src/main.d \
 ./Core/Src/quadspi.d \
 ./Core/Src/rtc.d \
@@ -54,6 +62,7 @@ C_DEPS += \
 ./Core/Src/spi.d \
 ./Core/Src/stm32l476g_discovery.d \
 ./Core/Src/stm32l476g_discovery_glass_lcd.d \
+./Core/Src/stm32l476g_discovery_qspi.d \
 ./Core/Src/stm32l4xx_hal_msp.d \
 ./Core/Src/stm32l4xx_it.d \
 ./Core/Src/syscalls.d \
@@ -69,7 +78,7 @@ Core/Src/%.o Core/Src/%.su: ../Core/Src/%.c Core/Src/subdir.mk
 clean: clean-Core-2f-Src
 
 clean-Core-2f-Src:
-	-$(RM) ./Core/Src/gpio.d ./Core/Src/gpio.o ./Core/Src/gpio.su ./Core/Src/i2c.d ./Core/Src/i2c.o ./Core/Src/i2c.su ./Core/Src/iwdg.d ./Core/Src/iwdg.o ./Core/Src/iwdg.su ./Core/Src/lcd.d ./Core/Src/lcd.o ./Core/Src/lcd.su ./Core/Src/main.d ./Core/Src/main.o ./Core/Src/main.su ./Core/Src/quadspi.d ./Core/Src/quadspi.o ./Core/Src/quadspi.su ./Core/Src/rtc.d ./Core/Src/rtc.o ./Core/Src/rtc.su ./Core/Src/sai.d ./Core/Src/sai.o ./Core/Src/sai.su ./Core/Src/spi.d ./Core/Src/spi.o ./Core/Src/spi.su ./Core/Src/stm32l476g_discovery.d ./Core/Src/stm32l476g_discovery.o ./Core/Src/stm32l476g_discovery.su ./Core/Src/stm32l476g_discovery_glass_lcd.d ./Core/Src/stm32l476g_discovery_glass_lcd.o ./Core/Src/stm32l476g_discovery_glass_lcd.su ./Core/Src/stm32l4xx_hal_msp.d ./Core/Src/stm32l4xx_hal_msp.o ./Core/Src/stm32l4xx_hal_msp.su ./Core/Src/stm32l4xx_it.d ./Core/Src/stm32l4xx_it.o ./Core/Src/stm32l4xx_it.su ./Core/Src/syscalls.d ./Core/Src/syscalls.o ./Core/Src/syscalls.su ./Core/Src/sysmem.d ./Core/Src/sysmem.o ./Core/Src/sysmem.su ./Core/Src/system_stm32l4xx.d ./Core/Src/system_stm32l4xx.o ./Core/Src/system_stm32l4xx.su ./Core/Src/usart.d ./Core/Src/usart.o ./Core/Src/usart.su
+	-$(RM) ./Core/Src/gpio.d ./Core/Src/gpio.o ./Core/Src/gpio.su ./Core/Src/i2c.d ./Core/Src/i2c.o ./Core/Src/i2c.su ./Core/Src/iwdg.d ./Core/Src/iwdg.o ./Core/Src/iwdg.su ./Core/Src/lcd.d ./Core/Src/lcd.o ./Core/Src/lcd.su ./Core/Src/lfs.d ./Core/Src/lfs.o ./Core/Src/lfs.su ./Core/Src/lfs_util.d ./Core/Src/lfs_util.o ./Core/Src/lfs_util.su ./Core/Src/main.d ./Core/Src/main.o ./Core/Src/main.su ./Core/Src/quadspi.d ./Core/Src/quadspi.o ./Core/Src/quadspi.su ./Core/Src/rtc.d ./Core/Src/rtc.o ./Core/Src/rtc.su ./Core/Src/sai.d ./Core/Src/sai.o ./Core/Src/sai.su ./Core/Src/spi.d ./Core/Src/spi.o ./Core/Src/spi.su ./Core/Src/stm32l476g_discovery.d ./Core/Src/stm32l476g_discovery.o ./Core/Src/stm32l476g_discovery.su ./Core/Src/stm32l476g_discovery_glass_lcd.d ./Core/Src/stm32l476g_discovery_glass_lcd.o ./Core/Src/stm32l476g_discovery_glass_lcd.su ./Core/Src/stm32l476g_discovery_qspi.d ./Core/Src/stm32l476g_discovery_qspi.o ./Core/Src/stm32l476g_discovery_qspi.su ./Core/Src/stm32l4xx_hal_msp.d ./Core/Src/stm32l4xx_hal_msp.o ./Core/Src/stm32l4xx_hal_msp.su ./Core/Src/stm32l4xx_it.d ./Core/Src/stm32l4xx_it.o ./Core/Src/stm32l4xx_it.su ./Core/Src/syscalls.d ./Core/Src/syscalls.o ./Core/Src/syscalls.su ./Core/Src/sysmem.d ./Core/Src/sysmem.o ./Core/Src/sysmem.su ./Core/Src/system_stm32l4xx.d ./Core/Src/system_stm32l4xx.o ./Core/Src/system_stm32l4xx.su ./Core/Src/usart.d ./Core/Src/usart.o ./Core/Src/usart.su
 
 .PHONY: clean-Core-2f-Src
 
