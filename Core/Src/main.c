@@ -65,6 +65,10 @@ int block_device_read(const struct lfs_config *c, lfs_block_t block, lfs_off_t o
 int block_device_prog(const struct lfs_config *c, lfs_block_t block, lfs_off_t off, const void *buffer, lfs_size_t size);
 int block_device_erase(const struct lfs_config *c, lfs_block_t block);
 int block_device_sync(const struct lfs_config *c);
+
+void initFS();
+void readFile(lfs_t *lfs, lfs_file_t *file, const char *path, void *buffer, lfs_size_t size);
+void writeFile(lfs_t *lfs, lfs_file_t *file, const char *path, const void *buffer, lfs_size_t size);
 /* USER CODE END PFP */
 
 /* Private user code ---------------------------------------------------------*/
@@ -132,6 +136,7 @@ int main(void)
   BSP_LCD_GLASS_Init();
   BSP_LCD_GLASS_Clear();
   BSP_QSPI_Init();
+  initFS();
   /* USER CODE END 2 */
   uint32_t last_ms=HAL_GetTick();
   	uint32_t now=last_ms;
@@ -144,27 +149,9 @@ int main(void)
   	RTC_TimeTypeDef RtcTime;
   	RTC_DateTypeDef RtcDate;
 
-  	int err = lfs_mount(&lfs, &cfg);
-
-  	if (err){
-  		lfs_format(&lfs, &cfg);
-  		lfs_mount(&lfs, &cfg);
-  	}
-
-
-
-  	lfs_file_open(&lfs, &file, "file", LFS_O_RDWR | LFS_O_CREAT);
-  	lfs_file_rewind(&lfs, &file);
-  	  	lfs_file_read(&lfs, &file, &test_text, sizeof(test_text));
-  	  	lfs_file_close(&lfs, &file);
-
-  	  lfs_file_open(&lfs, &file, "file", LFS_O_RDWR | LFS_O_CREAT);
-  	    	  	lfs_file_rewind(&lfs, &file);
-  	    	  	lfs_file_write(&lfs, &file, &test_text2, sizeof(test_text2));
-  	    	  	lfs_file_close(&lfs, &file);
-
-
-
+  	//filesystem use examples
+  	readFile(&lfs, &file, "file", &test_text, sizeof(test_text));
+  	writeFile(&lfs, &file, "file", &test_text2, sizeof(test_text2));
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
@@ -323,6 +310,28 @@ int block_device_erase(const struct lfs_config *c, lfs_block_t block)
 int block_device_sync(const struct lfs_config *c)
 {
 	return 0;
+}
+
+void initFS()
+{
+	if (lfs_mount(&lfs, &cfg)){
+	  	lfs_format(&lfs, &cfg);
+	  	lfs_mount(&lfs, &cfg);
+	}
+}
+
+void readFile(lfs_t *lfs, lfs_file_t *file, const char *path, void *buffer, lfs_size_t size)
+{
+  		lfs_file_open(lfs, file, path, LFS_O_RDWR | LFS_O_CREAT);
+  		lfs_file_read(lfs, file, buffer, size);
+  		lfs_file_close(lfs, file);
+}
+
+void writeFile(lfs_t *lfs, lfs_file_t *file, const char *path, const void *buffer, lfs_size_t size)
+{
+  		lfs_file_open(lfs, file, path, LFS_O_RDWR | LFS_O_CREAT);
+  		lfs_file_write(lfs, file, buffer, size);
+  		lfs_file_close(lfs, file);
 }
 /* USER CODE END 4 */
 
