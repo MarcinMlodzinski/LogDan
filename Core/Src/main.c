@@ -62,7 +62,8 @@ void PeriphCommonClock_Config(void);
 /* USER CODE BEGIN PFP */
 int16_t GetTemperature();
 void initMagneto();
-float convert_reg_data_to_temperature(int16_t value);
+float convertRegDataToTemperature(int16_t value);
+float getTemperatureCelsius();
 /* USER CODE END PFP */
 
 /* Private user code ---------------------------------------------------------*/
@@ -113,7 +114,6 @@ int main(void)
   BSP_LCD_GLASS_Init();
   BSP_LCD_GLASS_Clear();
   initMagneto();
-  float temp_value=0;
   float int_part=0;
   float fract_part=0;
   uint32_t last_ms=HAL_GetTick();
@@ -145,8 +145,7 @@ int main(void)
 	  		if (now - last_ms >= delay_500ms){
 	  			last_ms = now;
 
-	  			temp_value = convert_reg_data_to_temperature(GetTemperature());
-	  			fract_part = modff( temp_value, & int_part );
+	  			fract_part = modff( getTemperatureCelsius(), & int_part );
 	  			sprintf((char*)text, "Date %02d-%02d-20%02d Time %02d-%02d-%02d Temperature %d %01d ",
 	  						  RtcDate.Date, RtcDate.Month, RtcDate.Year, RtcTime.Hours, RtcTime.Minutes, RtcTime.Seconds, (int)int_part, (int)(fract_part*10.0));
 
@@ -279,11 +278,16 @@ void initMagneto()
 	MAGNETO_IO_Write(LSM303C_CTRL_REG4_M,LSM303C_MAG_OM_Z_ULTRAHIGH | LSM303C_MAG_BLE_LSB);
 	MAGNETO_IO_Write(LSM303C_CTRL_REG5_M,LSM303C_MAG_BDU_CONTINUOUS);
 }
-float convert_reg_data_to_temperature(int16_t value){
+float convertRegDataToTemperature(int16_t value){
 	int32_t temp = 0;
 	float result;
 	temp = 32768 + (int32_t)value;
 	result = (((float)temp / 65535) * 120) - 40;
+	return result;
+}
+float getTemperatureCelsius(){
+	float result = 0;
+	result = convertRegDataToTemperature(GetTemperature());
 	return result;
 }
 /* USER CODE END 4 */
