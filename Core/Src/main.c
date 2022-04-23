@@ -31,6 +31,9 @@
 /* USER CODE BEGIN Includes */
 #include "stdbool.h"
 #include "string.h"
+#include "lsm303c.h"
+#include "math.h"
+#include <stdio.h>
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -57,6 +60,9 @@
 void SystemClock_Config(void);
 void PeriphCommonClock_Config(void);
 /* USER CODE BEGIN PFP */
+int16_t GetTemperature();
+void initMagneto();
+float convert_reg_data_to_temperature(int16_t value);
 /* USER CODE END PFP */
 
 /* Private user code ---------------------------------------------------------*/
@@ -106,15 +112,21 @@ int main(void)
   /* USER CODE BEGIN 2 */
   BSP_LCD_GLASS_Init();
   BSP_LCD_GLASS_Clear();
-  /* USER CODE END 2 */
+  initMagneto();
+  float temp_value=0;
+  float int_part=0;
+  float fract_part=0;
   uint32_t last_ms=HAL_GetTick();
-  	uint32_t now=last_ms;
-  	uint32_t delay_500ms=500;
-  	int i=0;
-  	char text[50];
-  	char display[6];
-  	RTC_TimeTypeDef RtcTime;
-  	RTC_DateTypeDef RtcDate;
+  uint32_t now=last_ms;
+  uint32_t delay_500ms=500;
+  int i=0;
+  char text[50];
+  char display[6];
+  RTC_TimeTypeDef RtcTime;
+  RTC_DateTypeDef RtcDate;
+
+  /* USER CODE END 2 */
+
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
@@ -128,17 +140,15 @@ int main(void)
 //	  LCDStringDemo();
 	  HAL_RTC_GetTime(&hrtc, &RtcTime, RTC_FORMAT_BIN);
 	  HAL_RTC_GetDate(&hrtc, &RtcDate, RTC_FORMAT_BIN);
-	  sprintf((char*)text, "Date %02d-%02d-20%02d Time %02d-%02d-%02d ",
-			  RtcDate.Date, RtcDate.Month, RtcDate.Year, RtcTime.Hours, RtcTime.Minutes, RtcTime.Seconds);
 
-//	  	for(int j=0;j<6;j++){
-//	  		display[j]=text[j];
-//	  	}
-
-	  //	BSP_LCD_GLASS_DisplayString((uint8_t *)"8:8.888888"); //impossible to write a : or . using this function
 	  	if(i<=strlen(text)){
 	  		if (now - last_ms >= delay_500ms){
 	  			last_ms = now;
+
+	  			temp_value = convert_reg_data_to_temperature(GetTemperature());
+	  			fract_part = modff( temp_value, & int_part );
+	  			sprintf((char*)text, "Date %02d-%02d-20%02d Time %02d-%02d-%02d Temperature %d %01d ",
+	  						  RtcDate.Date, RtcDate.Month, RtcDate.Year, RtcTime.Hours, RtcTime.Minutes, RtcTime.Seconds, (int)int_part, (int)(fract_part*10.0));
 
 	  			for(int j=i-6;j<i;j++){
 	  				if(j<0)
@@ -152,8 +162,6 @@ int main(void)
 	  				}
 	  			}
 	  			i++;
-
-
 	  			BSP_LCD_GLASS_Clear();
 	  			BSP_LCD_GLASS_DisplayString((uint8_t *)display);
 	  		}
@@ -253,7 +261,31 @@ void PeriphCommonClock_Config(void)
 }
 
 /* USER CODE BEGIN 4 */
+int16_t GetTemperature()
+{
+	int8_t buffer[2];
+    buffer[0] = MAGNETO_IO_Read(LSM303C_TEMP_OUT_L_M);
+    buffer[1] = MAGNETO_IO_Read(LSM303C_TEMP_OUT_H_M);
 
+    int16_t temp = ((int16_t)((uint16_t)buffer[1] << 8) + buffer[0]);
+    return temp;
+}
+void initMagneto()
+{
+	MAGNETO_IO_Init();
+	MAGNETO_IO_Write(LSM303C_CTRL_REG1_M, LSM303C_MAG_TEMPSENSOR_ENABLE | LSM303C_MAG_OM_XY_ULTRAHIGH | LSM303C_MAG_ODR_40_HZ);
+	MAGNETO_IO_Write(LSM303C_CTRL_REG2_M, LSM303C_MAG_FS_16_GA | LSM303C_MAG_REBOOT_DEFAULT | LSM303C_MAG_SOFT_RESET_DEFAULT);
+	MAGNETO_IO_Write(LSM303C_CTRL_REG3_M,0x84);
+	MAGNETO_IO_Write(LSM303C_CTRL_REG4_M,LSM303C_MAG_OM_Z_ULTRAHIGH | LSM303C_MAG_BLE_LSB);
+	MAGNETO_IO_Write(LSM303C_CTRL_REG5_M,LSM303C_MAG_BDU_CONTINUOUS);
+}
+float convert_reg_data_to_temperature(int16_t value){
+	int32_t temp = 0;
+	float result;
+	temp = 32768 + (int32_t)value;
+	result = (((float)temp / 65535) * 120) - 40;
+	return result;
+}
 /* USER CODE END 4 */
 
 /**

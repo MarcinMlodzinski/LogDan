@@ -34,34 +34,34 @@ $(wildcard ../makefile.init) \
 $(wildcard ../makefile.targets) \
 
 
-BUILD_ARTIFACT_NAME := LogDan
+BUILD_ARTIFACT_NAME := SR_projekt
 BUILD_ARTIFACT_EXTENSION := elf
 BUILD_ARTIFACT_PREFIX :=
 BUILD_ARTIFACT := $(BUILD_ARTIFACT_PREFIX)$(BUILD_ARTIFACT_NAME)$(if $(BUILD_ARTIFACT_EXTENSION),.$(BUILD_ARTIFACT_EXTENSION),)
 
 # Add inputs and outputs from these tool invocations to the build variables 
 EXECUTABLES += \
-LogDan.elf \
+SR_projekt.elf \
 
 MAP_FILES += \
-LogDan.map \
+SR_projekt.map \
 
 SIZE_OUTPUT += \
 default.size.stdout \
 
 OBJDUMP_LIST += \
-LogDan.list \
+SR_projekt.list \
 
 
 # All Target
 all: main-build
 
 # Main-build Target
-main-build: LogDan.elf secondary-outputs
+main-build: SR_projekt.elf secondary-outputs
 
 # Tool invocations
-LogDan.elf LogDan.map: $(OBJS) $(USER_OBJS) /home/michalina/STM32CubeIDE/workspace_1.9.0/LogDan/STM32L476VGTX_FLASH.ld makefile objects.list $(OPTIONAL_TOOL_DEPS)
-	arm-none-eabi-gcc -o "LogDan.elf" @"objects.list" $(USER_OBJS) $(LIBS) -mcpu=cortex-m4 -T"/home/michalina/STM32CubeIDE/workspace_1.9.0/LogDan/STM32L476VGTX_FLASH.ld" --specs=nosys.specs -Wl,-Map="LogDan.map" -Wl,--gc-sections -static --specs=nano.specs -mfpu=fpv4-sp-d16 -mfloat-abi=hard -mthumb -Wl,--start-group -lc -lm -Wl,--end-group
+SR_projekt.elf SR_projekt.map: $(OBJS) $(USER_OBJS) /home/michalina/STM32CubeIDE/workspace_1.9.0/SR_projekt/STM32L476VGTX_FLASH.ld makefile objects.list $(OPTIONAL_TOOL_DEPS)
+	arm-none-eabi-gcc -o "SR_projekt.elf" @"objects.list" $(USER_OBJS) $(LIBS) -mcpu=cortex-m4 -T"/home/michalina/STM32CubeIDE/workspace_1.9.0/SR_projekt/STM32L476VGTX_FLASH.ld" --specs=nosys.specs -Wl,-Map="SR_projekt.map" -Wl,--gc-sections -static --specs=nano.specs -mfpu=fpv4-sp-d16 -mfloat-abi=hard -mthumb -Wl,--start-group -lc -lm -Wl,--end-group
 	@echo 'Finished building target: $@'
 	@echo ' '
 
@@ -70,14 +70,14 @@ default.size.stdout: $(EXECUTABLES) makefile objects.list $(OPTIONAL_TOOL_DEPS)
 	@echo 'Finished building: $@'
 	@echo ' '
 
-LogDan.list: $(EXECUTABLES) makefile objects.list $(OPTIONAL_TOOL_DEPS)
-	arm-none-eabi-objdump -h -S $(EXECUTABLES) > "LogDan.list"
+SR_projekt.list: $(EXECUTABLES) makefile objects.list $(OPTIONAL_TOOL_DEPS)
+	arm-none-eabi-objdump -h -S $(EXECUTABLES) > "SR_projekt.list"
 	@echo 'Finished building: $@'
 	@echo ' '
 
 # Other Targets
 clean:
-	-$(RM) LogDan.elf LogDan.list LogDan.map default.size.stdout
+	-$(RM) SR_projekt.elf SR_projekt.list SR_projekt.map default.size.stdout
 	-@echo ' '
 
 secondary-outputs: $(SIZE_OUTPUT) $(OBJDUMP_LIST)

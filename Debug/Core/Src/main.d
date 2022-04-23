@@ -40,7 +40,8 @@ Core/Src/main.o: ../Core/Src/main.c ../Core/Inc/main.h \
  ../Core/Inc/stm32l476g_discovery.h ../Core/Inc/i2c.h ../Core/Inc/iwdg.h \
  ../Core/Inc/lcd.h ../Core/Inc/quadspi.h ../Core/Inc/rtc.h \
  ../Core/Inc/sai.h ../Core/Inc/spi.h ../Core/Inc/usart.h \
- ../Core/Inc/gpio.h
+ ../Core/Inc/gpio.h ../Core/Inc/lsm303c.h ../Core/Inc/accelero.h \
+ ../Core/Inc/magneto.h
 ../Core/Inc/main.h:
 ../Drivers/STM32L4xx_HAL_Driver/Inc/stm32l4xx_hal.h:
 ../Core/Inc/stm32l4xx_hal_conf.h:
@@ -91,3 +92,6 @@ Core/Src/main.o: ../Core/Src/main.c ../Core/Inc/main.h \
 ../Core/Inc/spi.h:
 ../Core/Inc/usart.h:
 ../Core/Inc/gpio.h:
+../Core/Inc/lsm303c.h:
+../Core/Inc/accelero.h:
+../Core/Inc/magneto.h:
