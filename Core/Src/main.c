@@ -288,21 +288,18 @@ void PeriphCommonClock_Config(void)
 /* USER CODE BEGIN 4 */
 int block_device_read(const struct lfs_config *c, lfs_block_t block, lfs_off_t off, void *buffer, lfs_size_t size)
 {
-//	W25X_Read((uint8_t*)buffer, (block * c->block_size + off), size);
 	BSP_QSPI_Read((uint8_t*)buffer, (block * c->block_size + off), size);
 	return 0;
 }
 
 int block_device_prog(const struct lfs_config *c, lfs_block_t block, lfs_off_t off, const void *buffer, lfs_size_t size)
 {
-//	W25X_Write_NoCheck((uint8_t*)buffer, (block * c->block_size + off), size);
 	BSP_QSPI_Write((uint8_t*)buffer, (block * c->block_size + off), size);
 	return 0;
 }
 
 int block_device_erase(const struct lfs_config *c, lfs_block_t block)
 {
-//	W25X_Erase_Sector(block * c->block_size);
 	BSP_QSPI_Erase_Block(block * c->block_size);
 	return 0;
 }
