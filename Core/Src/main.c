@@ -153,7 +153,6 @@ int main(void)
   uint32_t delay_500ms = 500;
   int i = 0;
   char text[50];
-  char test_text[50];
   char display[6];
   RTC_TimeTypeDef RtcTime;
   RTC_DateTypeDef RtcDate;
@@ -174,8 +173,6 @@ int main(void)
     writeFile(&lfs, &file, "number_of_records", &number_of_records, sizeof(number_of_records));
     writeFile(&lfs, &file, "fs_check", &fs_ok, sizeof(fs_ok));
   }
-
-  readFile(&lfs, &file, "record1", &test_text, sizeof(test_text));
 
   BSP_LCD_GLASS_DisplayString((uint8_t *)fs_check);
 
@@ -211,11 +208,11 @@ int main(void)
         {
           if (j < 0)
           {
-            display[j - i + 6] = test_text[strlen(test_text) + j];
+            display[j - i + 6] = text[strlen(text) + j];
           }
           else
           {
-            display[j - i + 6] = test_text[j];
+            display[j - i + 6] = text[j];
           }
         }
         i++;
