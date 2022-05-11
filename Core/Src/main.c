@@ -159,8 +159,8 @@ int main(void)
   /* USER CODE END 2 */
 
   // filesystem use examples
-  readFile(&lfs, &file, "file", &test_text, sizeof(test_text));
-  writeFile(&lfs, &file, "file", &test_text2, sizeof(test_text2));
+  // readFile(&lfs, &file, "file", &test_text, sizeof(test_text));
+  // writeFile(&lfs, &file, "file", &test_text2, sizeof(test_text2));
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
