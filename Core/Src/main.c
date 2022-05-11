@@ -148,6 +148,7 @@ int main(void)
   float int_part = 0;
   float fract_part = 0;
   uint32_t last_ms = HAL_GetTick();
+  uint32_t last_ms_save = last_ms;
   uint32_t now = last_ms;
   uint32_t delay_500ms = 500;
   int i = 0;
@@ -155,6 +156,25 @@ int main(void)
   char display[6];
   RTC_TimeTypeDef RtcTime;
   RTC_DateTypeDef RtcDate;
+
+  char fs_ok[] = "FS OK";
+  char fs_check[5];
+  char record_file_name[10];
+  int number_of_records = 0;
+
+  readFile(&lfs, &file, "fs_check", &fs_check, sizeof(fs_check));
+
+  if (fs_check == fs_ok)
+  {
+    readFile(&lfs, &file, "number_of_records", &number_of_records, sizeof(number_of_records));
+  }
+  else
+  {
+    writeFile(&lfs, &file, "number_of_records", &number_of_records, sizeof(number_of_records));
+    writeFile(&lfs, &file, "fs_check", &fs_ok, sizeof(fs_ok));
+  }
+
+  BSP_LCD_GLASS_DisplayString((uint8_t *)fs_check);
 
   /* USER CODE END 2 */
 
@@ -198,6 +218,14 @@ int main(void)
         i++;
         BSP_LCD_GLASS_Clear();
         BSP_LCD_GLASS_DisplayString((uint8_t *)display);
+      }
+
+      if (now - last_ms_save >= 120 * delay_500ms)
+      {
+        last_ms_save = now;
+        number_of_records++;
+        sprintf(record_file_name, "record%d", number_of_records);
+        writeFile(&lfs, &file, record_file_name, &text, sizeof(text));
       }
     }
     else
