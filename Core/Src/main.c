@@ -188,11 +188,11 @@ int main(void)
         {
           if (j < 0)
           {
-            display[j - i + 6] = test_text[strlen(test_text) + j];
+            display[j - i + 6] = text[strlen(text) + j];
           }
           else
           {
-            display[j - i + 6] = test_text[j];
+            display[j - i + 6] = text[j];
           }
         }
         i++;
@@ -337,68 +337,73 @@ void writeFile(lfs_t *lfs, lfs_file_t *file, const char *path, const void *buffe
   lfs_file_open(lfs, file, path, LFS_O_RDWR | LFS_O_CREAT);
   lfs_file_write(lfs, file, buffer, size);
   lfs_file_close(lfs, file);
-  int16_t GetTemperature()
-  {
-    int8_t buffer[2];
-    buffer[0] = MAGNETO_IO_Read(LSM303C_TEMP_OUT_L_M);
-    buffer[1] = MAGNETO_IO_Read(LSM303C_TEMP_OUT_H_M);
+}
 
-    int16_t temp = ((int16_t)((uint16_t)buffer[1] << 8) + buffer[0]);
-    return temp;
-  }
-  void initMagneto()
-  {
-    MAGNETO_IO_Init();
-    MAGNETO_IO_Write(LSM303C_CTRL_REG1_M, LSM303C_MAG_TEMPSENSOR_ENABLE | LSM303C_MAG_OM_XY_ULTRAHIGH | LSM303C_MAG_ODR_40_HZ);
-    MAGNETO_IO_Write(LSM303C_CTRL_REG2_M, LSM303C_MAG_FS_16_GA | LSM303C_MAG_REBOOT_DEFAULT | LSM303C_MAG_SOFT_RESET_DEFAULT);
-    MAGNETO_IO_Write(LSM303C_CTRL_REG3_M, 0x84);
-    MAGNETO_IO_Write(LSM303C_CTRL_REG4_M, LSM303C_MAG_OM_Z_ULTRAHIGH | LSM303C_MAG_BLE_LSB);
-    MAGNETO_IO_Write(LSM303C_CTRL_REG5_M, LSM303C_MAG_BDU_CONTINUOUS);
-  }
-  float convertRegDataToTemperature(int16_t value)
-  {
-    int32_t temp = 0;
-    float result;
-    temp = 32768 + (int32_t)value;
-    result = (((float)temp / 65535) * 120) - 40;
-    return result;
-  }
-  float getTemperatureCelsius()
-  {
-    float result = 0;
-    result = convertRegDataToTemperature(GetTemperature());
-    return result;
-  }
-  /* USER CODE END 4 */
+int16_t GetTemperature()
+{
+  int8_t buffer[2];
+  buffer[0] = MAGNETO_IO_Read(LSM303C_TEMP_OUT_L_M);
+  buffer[1] = MAGNETO_IO_Read(LSM303C_TEMP_OUT_H_M);
 
-  /**
-   * @brief  This function is executed in case of error occurrence.
-   * @retval None
-   */
-  void Error_Handler(void)
+  int16_t temp = ((int16_t)((uint16_t)buffer[1] << 8) + buffer[0]);
+  return temp;
+}
+
+void initMagneto()
+{
+  MAGNETO_IO_Init();
+  MAGNETO_IO_Write(LSM303C_CTRL_REG1_M, LSM303C_MAG_TEMPSENSOR_ENABLE | LSM303C_MAG_OM_XY_ULTRAHIGH | LSM303C_MAG_ODR_40_HZ);
+  MAGNETO_IO_Write(LSM303C_CTRL_REG2_M, LSM303C_MAG_FS_16_GA | LSM303C_MAG_REBOOT_DEFAULT | LSM303C_MAG_SOFT_RESET_DEFAULT);
+  MAGNETO_IO_Write(LSM303C_CTRL_REG3_M, 0x84);
+  MAGNETO_IO_Write(LSM303C_CTRL_REG4_M, LSM303C_MAG_OM_Z_ULTRAHIGH | LSM303C_MAG_BLE_LSB);
+  MAGNETO_IO_Write(LSM303C_CTRL_REG5_M, LSM303C_MAG_BDU_CONTINUOUS);
+}
+
+float convertRegDataToTemperature(int16_t value)
+{
+  int32_t temp = 0;
+  float result;
+  temp = 32768 + (int32_t)value;
+  result = (((float)temp / 65535) * 120) - 40;
+  return result;
+}
+
+float getTemperatureCelsius()
+{
+  float result = 0;
+  result = convertRegDataToTemperature(GetTemperature());
+  return result;
+}
+/* USER CODE END 4 */
+
+/**
+ * @brief  This function is executed in case of error occurrence.
+ * @retval None
+ */
+void Error_Handler(void)
+{
+  /* USER CODE BEGIN Error_Handler_Debug */
+  /* User can add his own implementation to report the HAL error return state */
+  __disable_irq();
+  while (1)
   {
-    /* USER CODE BEGIN Error_Handler_Debug */
-    /* User can add his own implementation to report the HAL error return state */
-    __disable_irq();
-    while (1)
-    {
-    }
-    /* USER CODE END Error_Handler_Debug */
   }
+  /* USER CODE END Error_Handler_Debug */
+}
 
 #ifdef USE_FULL_ASSERT
-  /**
-   * @brief  Reports the name of the source file and the source line number
-   *         where the assert_param error has occurred.
-   * @param  file: pointer to the source file name
-   * @param  line: assert_param error line source number
-   * @retval None
-   */
-  void assert_failed(uint8_t * file, uint32_t line)
-  {
-    /* USER CODE BEGIN 6 */
-    /* User can add his own implementation to report the file name and line number,
-       ex: printf("Wrong parameters value: file %s on line %d\r\n", file, line) */
-    /* USER CODE END 6 */
-  }
+/**
+ * @brief  Reports the name of the source file and the source line number
+ *         where the assert_param error has occurred.
+ * @param  file: pointer to the source file name
+ * @param  line: assert_param error line source number
+ * @retval None
+ */
+void assert_failed(uint8_t *file, uint32_t line)
+{
+  /* USER CODE BEGIN 6 */
+  /* User can add his own implementation to report the file name and line number,
+     ex: printf("Wrong parameters value: file %s on line %d\r\n", file, line) */
+  /* USER CODE END 6 */
+}
 #endif /* USE_FULL_ASSERT */
