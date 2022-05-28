@@ -39,16 +39,16 @@ void MX_LCD_Init(void)
   /* USER CODE END LCD_Init 1 */
   hlcd.Instance = LCD;
   hlcd.Init.Prescaler = LCD_PRESCALER_1;
-  hlcd.Init.Divider = LCD_DIVIDER_16;
+  hlcd.Init.Divider = LCD_DIVIDER_31;
   hlcd.Init.Duty = LCD_DUTY_1_4;
-  hlcd.Init.Bias = LCD_BIAS_1_4;
+  hlcd.Init.Bias = LCD_BIAS_1_3;
   hlcd.Init.VoltageSource = LCD_VOLTAGESOURCE_INTERNAL;
-  hlcd.Init.Contrast = LCD_CONTRASTLEVEL_0;
+  hlcd.Init.Contrast = LCD_CONTRASTLEVEL_5;
   hlcd.Init.DeadTime = LCD_DEADTIME_0;
-  hlcd.Init.PulseOnDuration = LCD_PULSEONDURATION_0;
+  hlcd.Init.PulseOnDuration = LCD_PULSEONDURATION_4;
   hlcd.Init.MuxSegment = LCD_MUXSEGMENT_DISABLE;
   hlcd.Init.BlinkMode = LCD_BLINKMODE_OFF;
-  hlcd.Init.BlinkFrequency = LCD_BLINKFREQUENCY_DIV8;
+  hlcd.Init.BlinkFrequency = LCD_BLINKFREQUENCY_DIV32;
   hlcd.Init.HighDrive = LCD_HIGHDRIVE_DISABLE;
   if (HAL_LCD_Init(&hlcd) != HAL_OK)
   {
@@ -122,7 +122,7 @@ void HAL_LCD_MspInit(LCD_HandleTypeDef* lcdHandle)
                           |SEG9_Pin|SEG13_Pin;
     GPIO_InitStruct.Mode = GPIO_MODE_AF_PP;
     GPIO_InitStruct.Pull = GPIO_NOPULL;
-    GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
+    GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_VERY_HIGH;
     GPIO_InitStruct.Alternate = GPIO_AF11_LCD;
     HAL_GPIO_Init(GPIOC, &GPIO_InitStruct);
 
@@ -130,7 +130,7 @@ void HAL_LCD_MspInit(LCD_HandleTypeDef* lcdHandle)
                           |COM2_Pin|SEG10_Pin;
     GPIO_InitStruct.Mode = GPIO_MODE_AF_PP;
     GPIO_InitStruct.Pull = GPIO_NOPULL;
-    GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
+    GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_VERY_HIGH;
     GPIO_InitStruct.Alternate = GPIO_AF11_LCD;
     HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
 
@@ -139,7 +139,7 @@ void HAL_LCD_MspInit(LCD_HandleTypeDef* lcdHandle)
                           |COM3_Pin;
     GPIO_InitStruct.Mode = GPIO_MODE_AF_PP;
     GPIO_InitStruct.Pull = GPIO_NOPULL;
-    GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
+    GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_VERY_HIGH;
     GPIO_InitStruct.Alternate = GPIO_AF11_LCD;
     HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
 
@@ -147,7 +147,7 @@ void HAL_LCD_MspInit(LCD_HandleTypeDef* lcdHandle)
                           |SEG16_Pin|SEG7_Pin|SEG15_Pin|SEG8_Pin;
     GPIO_InitStruct.Mode = GPIO_MODE_AF_PP;
     GPIO_InitStruct.Pull = GPIO_NOPULL;
-    GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
+    GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_VERY_HIGH;
     GPIO_InitStruct.Alternate = GPIO_AF11_LCD;
     HAL_GPIO_Init(GPIOD, &GPIO_InitStruct);
 

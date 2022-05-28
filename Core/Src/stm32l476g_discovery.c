@@ -482,7 +482,7 @@ uint8_t BSP_JOY_Init(JOYMode_TypeDef Joy_Mode)
     else if (Joy_Mode == JOY_MODE_EXTI)
     {
       /* Configure Joy pin as input with External interrupt */
-      GPIO_InitStruct.Mode = GPIO_MODE_IT_FALLING;
+      GPIO_InitStruct.Mode = GPIO_MODE_IT_RISING;
       HAL_GPIO_Init(JOY_PORT[joykey], &GPIO_InitStruct);
 
       /* Enable and set Joy EXTI Interrupt to the lowest priority */

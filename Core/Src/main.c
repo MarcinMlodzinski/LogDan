@@ -27,6 +27,7 @@
 #include "spi.h"
 #include "usart.h"
 #include "gpio.h"
+
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
 #include "stdbool.h"
@@ -58,12 +59,20 @@
 // variables used by the filesystem
 lfs_t lfs;
 lfs_file_t file;
+
+JOYState_TypeDef joy_state = JOY_NONE;
+volatile FlagStatus KeyPressed = RESET;
+FlagStatus JoyInitialized = RESET;
+FlagStatus IddInitialized = RESET;
+FlagStatus LcdInitialized = RESET;
+FlagStatus LedInitialized = RESET;
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
 void SystemClock_Config(void);
 void PeriphCommonClock_Config(void);
 /* USER CODE BEGIN PFP */
+void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin);
 int block_device_read(const struct lfs_config *c, lfs_block_t block, lfs_off_t off, void *buffer, lfs_size_t size);
 int block_device_prog(const struct lfs_config *c, lfs_block_t block, lfs_off_t off, const void *buffer, lfs_size_t size);
 int block_device_erase(const struct lfs_config *c, lfs_block_t block);
@@ -132,7 +141,7 @@ int main(void)
   MX_GPIO_Init();
   MX_I2C1_Init();
   MX_I2C2_Init();
-  //  MX_LCD_Init();
+  MX_LCD_Init();
   MX_QUADSPI_Init();
   MX_SAI1_Init();
   MX_SPI2_Init();
@@ -178,10 +187,6 @@ int main(void)
 
   /* USER CODE END 2 */
 
-  // filesystem use examples
-  // readFile(&lfs, &file, "file", &test_text, sizeof(test_text));
-  // writeFile(&lfs, &file, "file", &test_text2, sizeof(test_text2));
-
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
   while (1)
@@ -191,15 +196,47 @@ int main(void)
     //	  LCDBarDemo();
     //	  LCDCharDemo();
     //	  LCDStringDemo();
-    HAL_RTC_GetTime(&hrtc, &RtcTime, RTC_FORMAT_BIN);
-    HAL_RTC_GetDate(&hrtc, &RtcDate, RTC_FORMAT_BIN);
+
+    if (KeyPressed)
+    {
+      switch (joy_state)
+      {
+      case JOY_LEFT:
+        sprintf((char *)text, "LEFT");
+        break;
+
+      case JOY_RIGHT:
+        sprintf((char *)text, "RIGHT");
+        break;
+
+      case JOY_UP:
+        sprintf((char *)text, "UP");
+        break;
+
+      case JOY_DOWN:
+        sprintf((char *)text, "DOWN");
+        break;
+
+      case JOY_SEL:
+        sprintf((char *)text, "SELECT");
+        break;
+
+      default:
+        break;
+      }
+    }
+    else
+    {
+      sprintf((char *)text, "NOTHING");
+    }
 
     if (i <= strlen(text))
     {
       if (now - last_ms >= delay_500ms)
       {
         last_ms = now;
-
+        HAL_RTC_GetTime(&hrtc, &RtcTime, RTC_FORMAT_BIN);
+        HAL_RTC_GetDate(&hrtc, &RtcDate, RTC_FORMAT_BIN);
         fract_part = modff(getTemperatureCelsius(), &int_part);
         sprintf((char *)text, "Date %02d-%02d-20%02d Time %02d-%02d-%02d Temperature %d %01d ",
                 RtcDate.Date, RtcDate.Month, RtcDate.Year, RtcTime.Hours, RtcTime.Minutes, RtcTime.Seconds, (int)int_part, (int)(fract_part * 10.0));
@@ -232,9 +269,10 @@ int main(void)
     {
       i = 0;
     }
-
+    KeyPressed = RESET;
     HAL_IWDG_Refresh(&hiwdg);
     /* USER CODE END WHILE */
+
     /* USER CODE BEGIN 3 */
   }
   /* USER CODE END 3 */
@@ -321,6 +359,33 @@ void PeriphCommonClock_Config(void)
 }
 
 /* USER CODE BEGIN 4 */
+void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
+{
+  if ((GPIO_Pin & (DOWN_JOY_PIN | UP_JOY_PIN | SEL_JOY_PIN | RIGHT_JOY_PIN | LEFT_JOY_PIN)) != RESET)
+  {
+    KeyPressed = SET;
+
+    switch (GPIO_Pin)
+    {
+    case DOWN_JOY_PIN:
+      joy_state = JOY_DOWN;
+      break;
+    case UP_JOY_PIN:
+      joy_state = JOY_UP;
+      break;
+    case SEL_JOY_PIN:
+      joy_state = JOY_SEL;
+      break;
+    case RIGHT_JOY_PIN:
+      joy_state = JOY_RIGHT;
+      break;
+    case LEFT_JOY_PIN:
+      joy_state = JOY_LEFT;
+      break;
+    }
+  }
+}
+
 int block_device_read(const struct lfs_config *c, lfs_block_t block, lfs_off_t off, void *buffer, lfs_size_t size)
 {
   BSP_QSPI_Read((uint8_t *)buffer, (block * c->block_size + off), size);
