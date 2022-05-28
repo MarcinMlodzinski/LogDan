@@ -41,7 +41,7 @@
 
 /* Private variables ---------------------------------------------------------*/
 /* USER CODE BEGIN PV */
-
+extern LCD_HandleTypeDef hlcd;
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -71,8 +71,18 @@ void HAL_MspInit(void)
 
   /* System interrupt init*/
 
-  /* USER CODE BEGIN MspInit 1 */
+  /* Peripheral interrupt init */
+  /* RCC_IRQn interrupt configuration */
+  HAL_NVIC_SetPriority(RCC_IRQn, 0, 0);
+  /* RCC_IRQn interrupt configuration */
+  HAL_NVIC_EnableIRQ(RCC_IRQn);
+  /* RCC_IRQn interrupt configuration */
+  HAL_NVIC_SetPriority(RCC_IRQn, 0, 0);
+  /* RCC_IRQn interrupt configuration */
+  HAL_NVIC_EnableIRQ(RCC_IRQn);
 
+  /* USER CODE BEGIN MspInit 1 */
+  HAL_LCD_MspInit(&hlcd);
   /* USER CODE END MspInit 1 */
 }
 
