@@ -37,6 +37,7 @@
 #include "lsm303c.h"
 #include "math.h"
 #include <stdio.h>
+#include <stdbool.h>
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -84,7 +85,7 @@ int16_t GetTemperature();
 void initMagneto();
 float convertRegDataToTemperature(int16_t value);
 float getTemperatureCelsius();
-void menu(int *menu_position, char *text, int *menu_select, int *i);
+void menu(int *menu_position, char *text, int *menu_select, int *i, bool erase_flag);
 /* USER CODE END PFP */
 
 /* Private user code ---------------------------------------------------------*/
@@ -174,6 +175,8 @@ int main(void)
 
     int menu_position = 0;
     int menu_select = 0;
+    bool erase_flag=false;
+    bool new_data=false;
     int set_time_tmp = -1;
 
     char record_file_name[10];
@@ -192,7 +195,6 @@ int main(void)
     	lfs_mount(&lfs, &cfg);
         writeFile(&lfs, &file, "number_of_records", &number_of_records, sizeof(number_of_records));
         writeFile(&lfs, &file, "delay_between_saves", &delay_between_saves, sizeof(delay_between_saves));
-//        writeFile(&lfs, &file, "fs_check", &fs_ok, sizeof(fs_ok));
     }
 
     int read_record_number = number_of_records;
@@ -209,7 +211,7 @@ int main(void)
 
         if (KeyPressed)
         {
-            menu(&menu_position, text, &menu_select, &i);
+            menu(&menu_position, text, &menu_select, &i, erase_flag);
         }
 
         if (i <= strlen(text))
@@ -230,8 +232,40 @@ int main(void)
                 case 2:
                     if (number_of_records)
                     {
+                    	if(new_data){
+                    		i=0;
+                    		new_data=false;
+                    	}
                         switch (joy_state)
                         {
+                        case JOY_RIGHT:
+                        	if(!erase_flag)
+                        	                        	{
+                        		erase_flag=true;
+                        		                        	i=0;
+                        	                        	}
+
+                        	break;
+                        case JOY_LEFT:
+                        	if(erase_flag)
+                        	{
+                        		erase_flag=false;
+                        		i=0;
+                        	}
+                        	break;
+                        case JOY_SEL:
+                        	if(erase_flag){
+                        		lfs_unmount(&lfs);
+                        		lfs_format(&lfs, &cfg);
+                        		lfs_mount(&lfs, &cfg);
+                        		number_of_records=0;
+                        		writeFile(&lfs, &file, "number_of_records", &number_of_records, sizeof(number_of_records));
+                        		writeFile(&lfs, &file, "delay_between_saves", &delay_between_saves, sizeof(delay_between_saves));
+                        		read_record_number=1;
+                        		erase_flag=false;
+                        	}
+
+                        	break;
                         case JOY_UP:
                             read_record_number++;
                             if (read_record_number > number_of_records)
@@ -252,11 +286,18 @@ int main(void)
                             break;
                         }
                         joy_state = JOY_NONE;
-                        sprintf(record_file_name, "record%d", read_record_number);
-                        readFile(&lfs, &file, record_file_name, &text, sizeof(text));
+                        if(!erase_flag){
+                        		sprintf(record_file_name, "record%d", read_record_number);
+                        		readFile(&lfs, &file, record_file_name, &text, sizeof(text));
+                        }
+                        else
+                        {
+                        	sprintf(text, "Potwierdz usuniecie danych      ");
+                        }
                     }
                     else
                     {
+                    	new_data=true;
                         sprintf(text, "Brak zapisanych danych      ");
                     }
                     break;
@@ -783,7 +824,7 @@ float getTemperatureCelsius()
     return result;
 }
 
-void menu(int *menu_position, char *text, int *menu_select, int *i)
+void menu(int *menu_position, char *text, int *menu_select, int *i, bool erase_flag)
 {
     KeyPressed = RESET;
     int menu_entities = 4;
@@ -819,8 +860,10 @@ void menu(int *menu_position, char *text, int *menu_select, int *i)
         break;
 
     case JOY_LEFT:
+    	if(!erase_flag){
         (*menu_select) = 0;
         (*i) = 0;
+    	}
         break;
 
     case JOY_SEL:
