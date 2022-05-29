@@ -165,11 +165,15 @@ int main(void)
     int i = 0;
     char text[60];
     char display[6];
-    RTC_TimeTypeDef RtcTime;
-    RTC_DateTypeDef RtcDate;
+    RTC_TimeTypeDef RtcTime = {0}, new_time = {0};
+    RTC_DateTypeDef RtcDate = {0}, new_date = {0};
+
+    HAL_RTC_GetTime(&hrtc, &RtcTime, RTC_FORMAT_BIN);
+    HAL_RTC_GetDate(&hrtc, &RtcDate, RTC_FORMAT_BIN);
 
     int menu_position = 0;
     int menu_select = 0;
+    int set_time_tmp = -1;
 
     char fs_ok[] = "FS OK";
     char fs_check[5];
@@ -190,16 +194,16 @@ int main(void)
 
     int read_record_number = number_of_records;
 
-//    char test[] = "data0      ";
-//
-//    for (int a = 0; a < 5; a++)
-//    {
-//        number_of_records++;
-//        sprintf(test, "data%d      ", a);
-//        sprintf(record_file_name, "record%d", number_of_records);
-//        writeFile(&lfs, &file, record_file_name, &test, sizeof(test));
-//    }
-//    writeFile(&lfs, &file, "number_of_records", &number_of_records, sizeof(number_of_records));
+    //    char test[] = "data0      ";
+    //
+    //    for (int a = 0; a < 5; a++)
+    //    {
+    //        number_of_records++;
+    //        sprintf(test, "data%d      ", a);
+    //        sprintf(record_file_name, "record%d", number_of_records);
+    //        writeFile(&lfs, &file, record_file_name, &test, sizeof(test));
+    //    }
+    //    writeFile(&lfs, &file, "number_of_records", &number_of_records, sizeof(number_of_records));
 
     BSP_LCD_GLASS_DisplayString((uint8_t *)fs_check);
     sprintf(text, "Uzyj joysticka aby nawigowac      ");
@@ -270,13 +274,173 @@ int main(void)
                     }
                     break;
                 case 3:
+                    switch (joy_state)
+                    {
+                    case JOY_SEL:
+                        set_time_tmp++;
+                        break;
+                    case JOY_UP:
+                        switch (set_time_tmp)
+                        {
+                        case 0:
+                            new_date.Date++;
+                            if (new_date.Date > 31)
+                            {
+                                new_date.Date = 1;
+                            }
+                            break;
+                        case 1:
+                            new_date.Month++;
+                            if (new_date.Month > 12)
+                            {
+                                new_date.Month = 1;
+                            }
+                            break;
+                        case 2:
+                            new_date.Year++;
+                            if (new_date.Year > 99)
+                            {
+                                new_date.Year = 0;
+                            }
+                            break;
+                        case 3:
+                            new_time.Hours++;
+                            if (new_time.Hours > 23)
+                            {
+                                new_time.Hours = 0;
+                            }
+                            break;
+                        case 4:
+                            new_time.Minutes++;
+                            if (new_time.Minutes > 59)
+                            {
+                                new_time.Minutes = 0;
+                            }
+                            break;
+                        case 5:
+                            new_time.Seconds++;
+                            if (new_time.Seconds > 59)
+                            {
+                                new_time.Seconds = 0;
+                            }
+                            break;
+                        default:
+                            break;
+                        }
+                        break;
+                    case JOY_DOWN:
+                        switch (set_time_tmp)
+                        {
+                        case 0:
+                            new_date.Date--;
+                            if (new_date.Date < 1)
+                            {
+                                new_date.Date = 31;
+                            }
+                            break;
+                        case 1:
+                            new_date.Month--;
+                            if (new_date.Month < 1)
+                            {
+                                new_date.Month = 12;
+                            }
+                            break;
+                        case 2:
 
+                            if (new_date.Year <= 0)
+                            {
+                                new_date.Year = 99;
+                            }
+                            else
+                            {
+                                new_date.Year--;
+                            }
+                            break;
+                        case 3:
+
+                            if (new_time.Hours <= 0)
+                            {
+                                new_time.Hours = 23;
+                            }
+                            else
+                            {
+                                new_time.Hours--;
+                            }
+                            break;
+                        case 4:
+
+                            if (new_time.Minutes <= 0)
+                            {
+                                new_time.Minutes = 59;
+                            }
+                            else
+                            {
+                                new_time.Minutes--;
+                            }
+                            break;
+                        case 5:
+
+                            if (new_time.Seconds <= 0)
+                            {
+                                new_time.Seconds = 59;
+                            }
+                            else
+                            {
+                                new_time.Seconds--;
+                            }
+                            break;
+                        default:
+                            break;
+                        }
+                        break;
+                    default:
+                        break;
+                    }
+
+                    switch (set_time_tmp)
+                    {
+                    case 0:
+                        sprintf(text, "D %02d", new_date.Date);
+                        break;
+                    case 1:
+                        sprintf(text, "Msc %02d", new_date.Month);
+                        break;
+                    case 2:
+                        sprintf(text, "R 20%02d", new_date.Year);
+                        break;
+                    case 3:
+                        sprintf(text, "G %02d", new_time.Hours);
+                        break;
+                    case 4:
+                        sprintf(text, "Min %02d", new_time.Minutes);
+                        break;
+                    case 5:
+                        sprintf(text, "S %02d", new_time.Seconds);
+                        break;
+                    default:
+                        break;
+                    }
+
+                    if (set_time_tmp <= 5)
+                    {
+                        joy_state = JOY_NONE;
+                    }
+                    else
+                    {
+                        HAL_RTC_SetTime(&hrtc, &new_time, RTC_FORMAT_BIN);
+                        HAL_RTC_SetDate(&hrtc, &new_date, RTC_FORMAT_BIN);
+                        joy_state = JOY_LEFT;
+                        KeyPressed = SET;
+                    }
                     break;
                 case 4:
 
                     break;
                 default:
                     read_record_number = number_of_records;
+                    set_time_tmp = -1;
+                    new_time = RtcTime;
+                    new_date = RtcDate;
                     switch (menu_position)
                     {
                     case 1:
@@ -295,20 +459,28 @@ int main(void)
                     break;
                 }
 
-                for (int j = i - 6; j < i; j++)
+                if (menu_select != 3)
                 {
-                    if (j < 0)
+                    for (int j = i - 6; j < i; j++)
                     {
-                        display[j - i + 6] = text[strlen(text) + j];
+                        if (j < 0)
+                        {
+                            display[j - i + 6] = text[strlen(text) + j];
+                        }
+                        else
+                        {
+                            display[j - i + 6] = text[j];
+                        }
                     }
-                    else
-                    {
-                        display[j - i + 6] = text[j];
-                    }
+                    i++;
+                    BSP_LCD_GLASS_Clear();
+                    BSP_LCD_GLASS_DisplayString((uint8_t *)display);
                 }
-                i++;
-                BSP_LCD_GLASS_Clear();
-                BSP_LCD_GLASS_DisplayString((uint8_t *)display);
+                else
+                {
+                    BSP_LCD_GLASS_Clear();
+                    BSP_LCD_GLASS_DisplayString((uint8_t *)text);
+                }
                 BSP_LCD_GLASS_DisplayBar(LCD_BAR_3 >> (menu_position - 1));
             }
 
