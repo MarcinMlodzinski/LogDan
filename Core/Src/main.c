@@ -162,6 +162,10 @@ int main(void)
     uint32_t last_ms_save = last_ms;
     uint32_t now = last_ms;
     uint32_t delay_500ms = 500;
+    uint32_t delay_between_saves = 3600000; // one hour
+    uint8_t tmp_hours = 0;
+    uint8_t tmp_minutes = 0;
+    uint8_t tmp_seconds = 0;
     int i = 0;
     char text[60];
     char display[6];
@@ -434,7 +438,108 @@ int main(void)
                     }
                     break;
                 case 4:
+                    switch (joy_state)
+                    {
+                    case JOY_SEL:
+                        set_time_tmp++;
+                        break;
+                    case JOY_UP:
+                        switch (set_time_tmp)
+                        {
+                        case 0:
+                            tmp_hours++;
+                            if (tmp_hours > 23)
+                            {
+                                tmp_hours = 0;
+                            }
+                            break;
+                        case 1:
+                            tmp_minutes++;
+                            if (tmp_minutes > 59)
+                            {
+                                tmp_minutes = 0;
+                            }
+                            break;
+                        case 2:
+                            tmp_seconds++;
+                            if (tmp_seconds > 99)
+                            {
+                                tmp_seconds = 0;
+                            }
+                            break;
+                        default:
+                            break;
+                        }
+                        break;
+                    case JOY_DOWN:
+                        switch (set_time_tmp)
+                        {
+                        case 0:
 
+                            if (tmp_hours <= 0)
+                            {
+                                tmp_hours = 23;
+                            }
+                            else
+                            {
+                                tmp_hours--;
+                            }
+                            break;
+                        case 1:
+
+                            if (tmp_minutes <= 0)
+                            {
+                                tmp_minutes = 59;
+                            }
+                            else
+                            {
+                                tmp_minutes--;
+                            }
+                            break;
+                        case 2:
+
+                            if (tmp_seconds <= 0)
+                            {
+                                tmp_seconds = 59;
+                            }
+                            else
+                            {
+                                tmp_seconds--;
+                            }
+                            break;
+                        default:
+                            break;
+                        }
+                        break;
+                    default:
+                        break;
+                    }
+
+                    switch (set_time_tmp)
+                    {
+                    case 0:
+                        sprintf(text, "G %02d", tmp_hours);
+                        break;
+                    case 1:
+                        sprintf(text, "Min %02d", tmp_minutes);
+                        break;
+                    case 2:
+                        sprintf(text, "S %02d", tmp_seconds);
+                        break;
+                    default:
+                        break;
+                    }
+
+                    if (set_time_tmp <= 2)
+                    {
+                        joy_state = JOY_NONE;
+                    }
+                    else
+                    {
+                        delay_between_saves = tmp_hours * 3600000 + tmp_minutes * 60000 + tmp_seconds * 1000;
+                        joy_state = JOY_LEFT;
+                        KeyPressed = SET;
+                    }
                     break;
                 default:
                     read_record_number = number_of_records;
@@ -459,7 +564,7 @@ int main(void)
                     break;
                 }
 
-                if (menu_select != 3)
+                if (menu_select < 3)
                 {
                     for (int j = i - 6; j < i; j++)
                     {
