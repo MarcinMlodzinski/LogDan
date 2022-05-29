@@ -188,6 +188,8 @@ int main(void)
     writeFile(&lfs, &file, "fs_check", &fs_ok, sizeof(fs_ok));
   }
 
+  int read_record_number = number_of_records;
+
   BSP_LCD_GLASS_DisplayString((uint8_t *)fs_check);
   sprintf(text, "Uzyj joysticka aby nawigowac      ");
 
@@ -207,21 +209,49 @@ int main(void)
     {
       menu(&menu_position, text, &menu_select, &i);
     }
-    else
-    {
-      joy_state = JOY_NONE;
-    }
 
     if (i <= strlen(text))
     {
       if (now - last_ms >= delay_500ms)
       {
         last_ms = now;
-        //          HAL_RTC_GetTime(&hrtc, &RtcTime, RTC_FORMAT_BIN);
-        //          HAL_RTC_GetDate(&hrtc, &RtcDate, RTC_FORMAT_BIN);
-        //          fract_part = modff(getTemperatureCelsius(), &int_part);
-        //          sprintf((char *)text, "Date %02d-%02d-20%02d Time %02d-%02d-%02d Temperature %d %01d     ",
-        //                  RtcDate.Date, RtcDate.Month, RtcDate.Year, RtcTime.Hours, RtcTime.Minutes, RtcTime.Seconds, (int)int_part, (int)(fract_part * 10.0));
+
+        switch (menu_select)
+        {
+        case 1:
+          HAL_RTC_GetTime(&hrtc, &RtcTime, RTC_FORMAT_BIN);
+          HAL_RTC_GetDate(&hrtc, &RtcDate, RTC_FORMAT_BIN);
+          fract_part = modff(getTemperatureCelsius(), &int_part);
+          sprintf((char *)text, "Date %02d-%02d-20%02d Time %02d-%02d-%02d Temperature %d %01d      ",
+                  RtcDate.Date, RtcDate.Month, RtcDate.Year, RtcTime.Hours, RtcTime.Minutes, RtcTime.Seconds, (int)int_part, (int)(fract_part * 10.0));
+          break;
+        case 2:
+
+          break;
+        case 3:
+
+          break;
+        case 4:
+
+          break;
+        default:
+          switch (menu_position)
+          {
+          case 1:
+            sprintf(text, "Wyswietl aktualny odczyt      ");
+            break;
+          case 2:
+            sprintf(text, "Wyswietl historie      ");
+            break;
+          case 3:
+            sprintf(text, "Ustaw date i godzine      ");
+            break;
+          case 4:
+            sprintf(text, "Ustaw czas pomiedzy zapisami      ");
+            break;
+          }
+          break;
+        }
 
         for (int j = i - 6; j < i; j++)
         {
@@ -252,11 +282,7 @@ int main(void)
     {
       i = 0;
     }
-    //    KeyPressed = RESET;
-    //    if (menu_select)
-    //    {
-    //      menu_select = false;
-    //    }
+
     HAL_IWDG_Refresh(&hiwdg);
     /* USER CODE END WHILE */
 
@@ -459,61 +485,49 @@ void menu(int *menu_position, char *text, int *menu_select, int *i)
 {
   KeyPressed = RESET;
   int menu_entities = 4;
-  int menu_last_position = (*menu_position);
-  bool joy_state_correct = true;
 
   switch (joy_state)
   {
   case JOY_UP:
-
-    (*menu_position)--;
-    if ((*menu_position) < 1)
+    if ((*menu_select) == 0)
     {
-      (*menu_position) = menu_entities;
+      (*menu_position)--;
+
+      if ((*menu_position) < 1)
+      {
+        (*menu_position) = menu_entities;
+      }
+
+      (*i) = 0;
     }
     break;
 
   case JOY_DOWN:
-
-    (*menu_position)++;
-
-    if ((*menu_position) > menu_entities)
+    if ((*menu_select) == 0)
     {
-      (*menu_position) = 1;
+      (*menu_position)++;
+
+      if ((*menu_position) > menu_entities)
+      {
+        (*menu_position) = 1;
+      }
+
+      (*i) = 0;
     }
+    break;
+
+  case JOY_LEFT:
+    (*menu_select) = 0;
+    (*i) = 0;
     break;
 
   case JOY_SEL:
     (*menu_select) = (*menu_position);
+    (*i) = 0;
     break;
 
   default:
-    joy_state_correct = false;
     break;
-  }
-
-  if (joy_state_correct)
-  {
-
-    if ((*menu_position) != menu_last_position)
-    {
-      (*i) = 0;
-      switch ((*menu_position))
-      {
-      case 1:
-        sprintf(text, "Wyswietl aktualny odczyt      ");
-        break;
-      case 2:
-        sprintf(text, "Wyswietl historie      ");
-        break;
-      case 3:
-        sprintf(text, "Ustaw date i godzine      ");
-        break;
-      case 4:
-        sprintf(text, "Ustaw czas pomiedzy zapisami      ");
-        break;
-      }
-    }
   }
 }
 /* USER CODE END 4 */
