@@ -37,6 +37,7 @@
 #include "lsm303c.h"
 #include "math.h"
 #include <stdio.h>
+#include <stdbool.h>
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -60,12 +61,12 @@
 lfs_t lfs;
 lfs_file_t file;
 
-JOYState_TypeDef joy_state = JOY_NONE;
+volatile JOYState_TypeDef joy_state = JOY_NONE;
 volatile FlagStatus KeyPressed = RESET;
-FlagStatus JoyInitialized = RESET;
-FlagStatus IddInitialized = RESET;
-FlagStatus LcdInitialized = RESET;
-FlagStatus LedInitialized = RESET;
+// FlagStatus JoyInitialized = RESET;
+// FlagStatus IddInitialized = RESET;
+// FlagStatus LcdInitialized = RESET;
+// FlagStatus LedInitialized = RESET;
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -85,6 +86,7 @@ int16_t GetTemperature();
 void initMagneto();
 float convertRegDataToTemperature(int16_t value);
 float getTemperatureCelsius();
+void menu(int *menu_position, char *text, int *menu_select, int *i);
 /* USER CODE END PFP */
 
 /* Private user code ---------------------------------------------------------*/
@@ -161,10 +163,13 @@ int main(void)
   uint32_t now = last_ms;
   uint32_t delay_500ms = 500;
   int i = 0;
-  char text[50];
+  char text[60];
   char display[6];
   RTC_TimeTypeDef RtcTime;
   RTC_DateTypeDef RtcDate;
+
+  int menu_position = 0;
+  int menu_select = 0;
 
   char fs_ok[] = "FS OK";
   char fs_check[5];
@@ -184,6 +189,7 @@ int main(void)
   }
 
   BSP_LCD_GLASS_DisplayString((uint8_t *)fs_check);
+  sprintf(text, "Uzyj joysticka aby nawigowac      ");
 
   /* USER CODE END 2 */
 
@@ -199,35 +205,11 @@ int main(void)
 
     if (KeyPressed)
     {
-      switch (joy_state)
-      {
-      case JOY_LEFT:
-        sprintf((char *)text, "LEFT");
-        break;
-
-      case JOY_RIGHT:
-        sprintf((char *)text, "RIGHT");
-        break;
-
-      case JOY_UP:
-        sprintf((char *)text, "UP");
-        break;
-
-      case JOY_DOWN:
-        sprintf((char *)text, "DOWN");
-        break;
-
-      case JOY_SEL:
-        sprintf((char *)text, "SELECT");
-        break;
-
-      default:
-        break;
-      }
+      menu(&menu_position, text, &menu_select, &i);
     }
     else
     {
-      sprintf((char *)text, "NOTHING");
+      joy_state = JOY_NONE;
     }
 
     if (i <= strlen(text))
@@ -235,11 +217,11 @@ int main(void)
       if (now - last_ms >= delay_500ms)
       {
         last_ms = now;
-        HAL_RTC_GetTime(&hrtc, &RtcTime, RTC_FORMAT_BIN);
-        HAL_RTC_GetDate(&hrtc, &RtcDate, RTC_FORMAT_BIN);
-        fract_part = modff(getTemperatureCelsius(), &int_part);
-        sprintf((char *)text, "Date %02d-%02d-20%02d Time %02d-%02d-%02d Temperature %d %01d ",
-                RtcDate.Date, RtcDate.Month, RtcDate.Year, RtcTime.Hours, RtcTime.Minutes, RtcTime.Seconds, (int)int_part, (int)(fract_part * 10.0));
+        //          HAL_RTC_GetTime(&hrtc, &RtcTime, RTC_FORMAT_BIN);
+        //          HAL_RTC_GetDate(&hrtc, &RtcDate, RTC_FORMAT_BIN);
+        //          fract_part = modff(getTemperatureCelsius(), &int_part);
+        //          sprintf((char *)text, "Date %02d-%02d-20%02d Time %02d-%02d-%02d Temperature %d %01d     ",
+        //                  RtcDate.Date, RtcDate.Month, RtcDate.Year, RtcTime.Hours, RtcTime.Minutes, RtcTime.Seconds, (int)int_part, (int)(fract_part * 10.0));
 
         for (int j = i - 6; j < i; j++)
         {
@@ -255,21 +237,26 @@ int main(void)
         i++;
         BSP_LCD_GLASS_Clear();
         BSP_LCD_GLASS_DisplayString((uint8_t *)display);
+        BSP_LCD_GLASS_DisplayBar(LCD_BAR_3 >> (menu_position - 1));
       }
 
-      if (now - last_ms_save >= 120 * delay_500ms)
-      {
-        last_ms_save = now;
-        number_of_records++;
-        sprintf(record_file_name, "record%d", number_of_records);
-        writeFile(&lfs, &file, record_file_name, &text, sizeof(text));
-      }
+      //      if (now - last_ms_save >= 120 * delay_500ms)
+      //      {
+      //        last_ms_save = now;
+      //        number_of_records++;
+      //        sprintf(record_file_name, "record%d", number_of_records);
+      //        writeFile(&lfs, &file, record_file_name, &text, sizeof(text));
+      //      }
     }
     else
     {
       i = 0;
     }
-    KeyPressed = RESET;
+    //    KeyPressed = RESET;
+    //    if (menu_select)
+    //    {
+    //      menu_select = false;
+    //    }
     HAL_IWDG_Refresh(&hiwdg);
     /* USER CODE END WHILE */
 
@@ -466,6 +453,68 @@ float getTemperatureCelsius()
   float result = 0;
   result = convertRegDataToTemperature(GetTemperature());
   return result;
+}
+
+void menu(int *menu_position, char *text, int *menu_select, int *i)
+{
+  KeyPressed = RESET;
+  int menu_entities = 4;
+  int menu_last_position = (*menu_position);
+  bool joy_state_correct = true;
+
+  switch (joy_state)
+  {
+  case JOY_UP:
+
+    (*menu_position)--;
+    if ((*menu_position) < 1)
+    {
+      (*menu_position) = menu_entities;
+    }
+    break;
+
+  case JOY_DOWN:
+
+    (*menu_position)++;
+
+    if ((*menu_position) > menu_entities)
+    {
+      (*menu_position) = 1;
+    }
+    break;
+
+  case JOY_SEL:
+    (*menu_select) = (*menu_position);
+    break;
+
+  default:
+    joy_state_correct = false;
+    break;
+  }
+
+  if (joy_state_correct)
+  {
+
+    if ((*menu_position) != menu_last_position)
+    {
+      (*i) = 0;
+      switch ((*menu_position))
+      {
+      case 1:
+        sprintf(text, "Wyswietl aktualny odczyt      ");
+        break;
+      case 2:
+        sprintf(text, "Wyswietl historie      ");
+        break;
+      case 3:
+        sprintf(text, "Ustaw date i godzine      ");
+        break;
+      case 4:
+        sprintf(text, "Ustaw czas pomiedzy zapisami      ");
+        break;
+      }
+    }
+  }
 }
 /* USER CODE END 4 */
 
