@@ -725,9 +725,9 @@ static void Convert(uint8_t *Char, Point_Typedef Point, DoublePoint_Typedef Colo
       ch = C_NMAP;
       break;
 
-    case 'µ' :
-      ch = C_UMAP;
-      break;
+    case 'u' :
+          ch = C_UMAP;
+          break;
 
     case '-' :
       ch = C_MINUS;
@@ -741,9 +741,9 @@ static void Convert(uint8_t *Char, Point_Typedef Point, DoublePoint_Typedef Colo
       ch = C_SLATCH;
       break;
 
-    case '°' :
-      ch = C_PERCENT_1;
-      break;
+//    case 'ï¿½' :
+//      ch = C_PERCENT_1;
+//      break;
     case '%' :
       ch = C_PERCENT_2;
       break;

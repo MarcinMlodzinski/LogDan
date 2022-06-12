@@ -460,7 +460,7 @@ typedef enum
 /* code for 'n' character */
 #define C_NMAP                ((uint16_t) 0x2210)
 
-/* code for 'µ' character */
+/* code for 'ï¿½' character */
 #define C_UMAP                ((uint16_t) 0x6084)
 
 /* constant code for '*' character */
@@ -475,7 +475,7 @@ typedef enum
 /* constant code for '/' */
 #define C_SLATCH              ((uint16_t) 0x00c0)
 
-/* constant code for ° */
+/* constant code for ï¿½ */
 #define C_PERCENT_1           ((uint16_t) 0xec00)
 
 /* constant code for small o */

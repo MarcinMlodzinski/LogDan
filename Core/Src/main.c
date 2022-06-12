@@ -57,16 +57,10 @@
 /* Private variables ---------------------------------------------------------*/
 
 /* USER CODE BEGIN PV */
-// variables used by the filesystem
 lfs_t lfs;
 lfs_file_t file;
-
 volatile JOYState_TypeDef joy_state = JOY_NONE;
 volatile FlagStatus KeyPressed = RESET;
-// FlagStatus JoyInitialized = RESET;
-// FlagStatus IddInitialized = RESET;
-// FlagStatus LcdInitialized = RESET;
-// FlagStatus LedInitialized = RESET;
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -81,16 +75,30 @@ int block_device_sync(const struct lfs_config *c);
 
 void readFile(lfs_t *lfs, lfs_file_t *file, const char *path, void *buffer, lfs_size_t size);
 void writeFile(lfs_t *lfs, lfs_file_t *file, const char *path, const void *buffer, lfs_size_t size);
+static int traverse_df_cb(void *p, lfs_block_t block);
+static int df(void);
 int16_t GetTemperature();
 void initMagneto();
+void initFileSystem(int *number_of_records, uint32_t *delay_between_saves);
 float convertRegDataToTemperature(int16_t value);
 float getTemperatureCelsius();
 void menu(int *menu_position, char *text, int *menu_select, int *i, bool erase_flag);
+void menuUserView(int choose, char *text);
+void setDateUserView(int choose, RTC_TimeTypeDef time, RTC_DateTypeDef date, char *text);
+void changeDateDown(int choose, RTC_TimeTypeDef *time, RTC_DateTypeDef *date);
+void changeDateUp(int choose, RTC_TimeTypeDef *time, RTC_DateTypeDef *date);
+void timeUserView(int choose, RTC_TimeTypeDef *time, char *text);
+void changeTimeDown(int choose, RTC_TimeTypeDef *time);
+void changeTimeUp(int choose, RTC_TimeTypeDef *time);
+void setDelayBetweenSaves(uint32_t *delay_between_saves, RTC_TimeTypeDef *time);
+bool eraseAllData(int *number_of_records, int *read_record_number, uint32_t *delay_between_saves);
+void viewActualData(RTC_TimeTypeDef *RtcTime, RTC_DateTypeDef *RtcDate, char *text);
+void saveData(RTC_TimeTypeDef *RtcTime, RTC_DateTypeDef *RtcDate, int *number_of_records);
+void setTimeBetweenSaves(RTC_TimeTypeDef *time, uint32_t delay);
 /* USER CODE END PFP */
 
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
-// configuration of the filesystem is provided by this struct
 const struct lfs_config cfg = {
     // block device operations
     .read = block_device_read,
@@ -116,7 +124,12 @@ const struct lfs_config cfg = {
 int main(void)
 {
     /* USER CODE BEGIN 1 */
-
+    uint32_t last_ms = HAL_GetTick(), last_ms_save = last_ms, now = last_ms, delay_text_scroll = 200, delay_between_saves = 3600000; // delays in ms; delay between saves is one hour
+    int i = 0, menu_position = 0, menu_select = 0, set_time_tmp = -1, number_of_records = 0, read_record_number = 0;
+    char text[60], display[6], record_file_name[15];
+    bool erase_flag = false, new_data = false;
+    RTC_TimeTypeDef RtcTime = {0}, new_time = {0}, time_between_saves = {0};
+    RTC_DateTypeDef RtcDate = {0}, new_date = {0};
     /* USER CODE END 1 */
 
     /* MCU Configuration--------------------------------------------------------*/
@@ -142,8 +155,8 @@ int main(void)
     MX_GPIO_Init();
     MX_I2C1_Init();
     MX_I2C2_Init();
-    MX_LCD_Init();
-    MX_QUADSPI_Init();
+    // MX_LCD_Init();
+    // MX_QUADSPI_Init();
     MX_SAI1_Init();
     MX_SPI2_Init();
     MX_USART2_UART_Init();
@@ -151,56 +164,16 @@ int main(void)
     MX_IWDG_Init();
     /* USER CODE BEGIN 2 */
     BSP_LCD_GLASS_Init();
-    BSP_LCD_GLASS_Clear();
     BSP_QSPI_Init();
     initMagneto();
-    float int_part = 0;
-    float fract_part = 0;
-    uint32_t last_ms = HAL_GetTick();
-    uint32_t last_ms_save = last_ms;
-    uint32_t now = last_ms;
-    uint32_t delay_500ms = 500;
-    uint32_t delay_between_saves = 3600000; // one hour
-    uint8_t tmp_hours = 0;
-    uint8_t tmp_minutes = 0;
-    uint8_t tmp_seconds = 0;
-    int i = 0;
-    char text[60];
-    char display[6];
-    RTC_TimeTypeDef RtcTime = {0}, new_time = {0};
-    RTC_DateTypeDef RtcDate = {0}, new_date = {0};
-
+    initFileSystem(&number_of_records, &delay_between_saves);
     HAL_RTC_GetTime(&hrtc, &RtcTime, RTC_FORMAT_BIN);
     HAL_RTC_GetDate(&hrtc, &RtcDate, RTC_FORMAT_BIN);
 
-    int menu_position = 0;
-    int menu_select = 0;
-    bool erase_flag = false;
-    bool new_data = false;
-    int set_time_tmp = -1;
+    read_record_number = number_of_records;
+    setTimeBetweenSaves(&time_between_saves, delay_between_saves);
 
-    char record_file_name[10];
-    int number_of_records = 0;
-
-    if (!lfs_mount(&lfs, &cfg))
-    {
-        BSP_LCD_GLASS_DisplayString((uint8_t *)"FS OK");
-        readFile(&lfs, &file, "number_of_records", &number_of_records, sizeof(number_of_records));
-        readFile(&lfs, &file, "delay_between_saves", &delay_between_saves, sizeof(delay_between_saves));
-    }
-    else
-    {
-        BSP_LCD_GLASS_DisplayString((uint8_t *)"FS NEW");
-        lfs_format(&lfs, &cfg);
-        lfs_mount(&lfs, &cfg);
-        writeFile(&lfs, &file, "number_of_records", &number_of_records, sizeof(number_of_records));
-        writeFile(&lfs, &file, "delay_between_saves", &delay_between_saves, sizeof(delay_between_saves));
-    }
-
-    int read_record_number = number_of_records;
-
-    sprintf(text, "Uzyj joysticka aby nawigowac      ");
-
+    sprintf(text, "UZYJ JOYSTICKA ABY NAWIGOWAC      ");
     /* USER CODE END 2 */
 
     /* Infinite loop */
@@ -216,18 +189,14 @@ int main(void)
 
         if (i <= strlen(text))
         {
-            if (now - last_ms >= delay_500ms)
+            if (now - last_ms >= delay_text_scroll)
             {
                 last_ms = now;
 
                 switch (menu_select)
                 {
                 case 1:
-                    HAL_RTC_GetTime(&hrtc, &RtcTime, RTC_FORMAT_BIN);
-                    HAL_RTC_GetDate(&hrtc, &RtcDate, RTC_FORMAT_BIN);
-                    fract_part = modff(getTemperatureCelsius(), &int_part);
-                    sprintf((char *)text, "Date %02d-%02d-20%02d Time %02d-%02d-%02d Temperature %d %01d      ",
-                            RtcDate.Date, RtcDate.Month, RtcDate.Year, RtcTime.Hours, RtcTime.Minutes, RtcTime.Seconds, (int)int_part, (int)(fract_part * 10.0));
+                    viewActualData(&RtcTime, &RtcDate, text);
                     break;
                 case 2:
                     if (number_of_records)
@@ -257,14 +226,7 @@ int main(void)
                         case JOY_SEL:
                             if (erase_flag)
                             {
-                                lfs_unmount(&lfs);
-                                lfs_format(&lfs, &cfg);
-                                lfs_mount(&lfs, &cfg);
-                                number_of_records = 0;
-                                writeFile(&lfs, &file, "number_of_records", &number_of_records, sizeof(number_of_records));
-                                writeFile(&lfs, &file, "delay_between_saves", &delay_between_saves, sizeof(delay_between_saves));
-                                read_record_number = 1;
-                                erase_flag = false;
+                                erase_flag = eraseAllData(&number_of_records, &read_record_number, &delay_between_saves);
                             }
 
                             break;
@@ -295,13 +257,13 @@ int main(void)
                         }
                         else
                         {
-                            sprintf(text, "Potwierdz usuniecie danych      ");
+                            sprintf(text, "POTWIERDZ USUNIECIE DANYCH      ");
                         }
                     }
                     else
                     {
                         new_data = true;
-                        sprintf(text, "Brak zapisanych danych      ");
+                        sprintf(text, "BRAK ZAPISANYCH DANYCH      ");
                     }
                     break;
                 case 3:
@@ -311,147 +273,15 @@ int main(void)
                         set_time_tmp++;
                         break;
                     case JOY_UP:
-                        switch (set_time_tmp)
-                        {
-                        case 0:
-                            new_date.Date++;
-                            if (new_date.Date > 31)
-                            {
-                                new_date.Date = 1;
-                            }
-                            break;
-                        case 1:
-                            new_date.Month++;
-                            if (new_date.Month > 12)
-                            {
-                                new_date.Month = 1;
-                            }
-                            break;
-                        case 2:
-                            new_date.Year++;
-                            if (new_date.Year > 99)
-                            {
-                                new_date.Year = 0;
-                            }
-                            break;
-                        case 3:
-                            new_time.Hours++;
-                            if (new_time.Hours > 23)
-                            {
-                                new_time.Hours = 0;
-                            }
-                            break;
-                        case 4:
-                            new_time.Minutes++;
-                            if (new_time.Minutes > 59)
-                            {
-                                new_time.Minutes = 0;
-                            }
-                            break;
-                        case 5:
-                            new_time.Seconds++;
-                            if (new_time.Seconds > 59)
-                            {
-                                new_time.Seconds = 0;
-                            }
-                            break;
-                        default:
-                            break;
-                        }
+                        changeDateUp(set_time_tmp, &new_time, &new_date);
                         break;
                     case JOY_DOWN:
-                        switch (set_time_tmp)
-                        {
-                        case 0:
-                            new_date.Date--;
-                            if (new_date.Date < 1)
-                            {
-                                new_date.Date = 31;
-                            }
-                            break;
-                        case 1:
-                            new_date.Month--;
-                            if (new_date.Month < 1)
-                            {
-                                new_date.Month = 12;
-                            }
-                            break;
-                        case 2:
-
-                            if (new_date.Year <= 0)
-                            {
-                                new_date.Year = 99;
-                            }
-                            else
-                            {
-                                new_date.Year--;
-                            }
-                            break;
-                        case 3:
-
-                            if (new_time.Hours <= 0)
-                            {
-                                new_time.Hours = 23;
-                            }
-                            else
-                            {
-                                new_time.Hours--;
-                            }
-                            break;
-                        case 4:
-
-                            if (new_time.Minutes <= 0)
-                            {
-                                new_time.Minutes = 59;
-                            }
-                            else
-                            {
-                                new_time.Minutes--;
-                            }
-                            break;
-                        case 5:
-
-                            if (new_time.Seconds <= 0)
-                            {
-                                new_time.Seconds = 59;
-                            }
-                            else
-                            {
-                                new_time.Seconds--;
-                            }
-                            break;
-                        default:
-                            break;
-                        }
+                        changeDateDown(set_time_tmp, &new_time, &new_date);
                         break;
                     default:
                         break;
                     }
-
-                    switch (set_time_tmp)
-                    {
-                    case 0:
-                        sprintf(text, "D %02d", new_date.Date);
-                        break;
-                    case 1:
-                        sprintf(text, "Msc %02d", new_date.Month);
-                        break;
-                    case 2:
-                        sprintf(text, "R 20%02d", new_date.Year);
-                        break;
-                    case 3:
-                        sprintf(text, "G %02d", new_time.Hours);
-                        break;
-                    case 4:
-                        sprintf(text, "Min %02d", new_time.Minutes);
-                        break;
-                    case 5:
-                        sprintf(text, "S %02d", new_time.Seconds);
-                        break;
-                    default:
-                        break;
-                    }
-
+                    setDateUserView(set_time_tmp, new_time, new_date, text);
                     if (set_time_tmp <= 5)
                     {
                         joy_state = JOY_NONE;
@@ -469,93 +299,22 @@ int main(void)
                     {
                     case JOY_SEL:
                         set_time_tmp++;
+                        if (time_between_saves.Hours == 0 && time_between_saves.Minutes == 0 && time_between_saves.Seconds == 0 && set_time_tmp == 2)
+                        {
+                            time_between_saves.Seconds = 1;
+                        }
                         break;
                     case JOY_UP:
-                        switch (set_time_tmp)
-                        {
-                        case 0:
-                            tmp_hours++;
-                            if (tmp_hours > 23)
-                            {
-                                tmp_hours = 0;
-                            }
-                            break;
-                        case 1:
-                            tmp_minutes++;
-                            if (tmp_minutes > 59)
-                            {
-                                tmp_minutes = 0;
-                            }
-                            break;
-                        case 2:
-                            tmp_seconds++;
-                            if (tmp_seconds > 59)
-                            {
-                                tmp_seconds = 0;
-                            }
-                            break;
-                        default:
-                            break;
-                        }
+                        changeTimeUp(set_time_tmp, &time_between_saves);
                         break;
                     case JOY_DOWN:
-                        switch (set_time_tmp)
-                        {
-                        case 0:
-
-                            if (tmp_hours <= 0)
-                            {
-                                tmp_hours = 23;
-                            }
-                            else
-                            {
-                                tmp_hours--;
-                            }
-                            break;
-                        case 1:
-
-                            if (tmp_minutes <= 0)
-                            {
-                                tmp_minutes = 59;
-                            }
-                            else
-                            {
-                                tmp_minutes--;
-                            }
-                            break;
-                        case 2:
-
-                            if (tmp_seconds <= 0)
-                            {
-                                tmp_seconds = 59;
-                            }
-                            else
-                            {
-                                tmp_seconds--;
-                            }
-                            break;
-                        default:
-                            break;
-                        }
+                        changeTimeDown(set_time_tmp, &time_between_saves);
                         break;
                     default:
                         break;
                     }
 
-                    switch (set_time_tmp)
-                    {
-                    case 0:
-                        sprintf(text, "G %02d", tmp_hours);
-                        break;
-                    case 1:
-                        sprintf(text, "Min %02d", tmp_minutes);
-                        break;
-                    case 2:
-                        sprintf(text, "S %02d", tmp_seconds);
-                        break;
-                    default:
-                        break;
-                    }
+                    timeUserView(set_time_tmp, &time_between_saves, text);
 
                     if (set_time_tmp <= 2)
                     {
@@ -563,8 +322,7 @@ int main(void)
                     }
                     else
                     {
-                        delay_between_saves = tmp_hours * 3600000 + tmp_minutes * 60000 + tmp_seconds * 1000;
-                        writeFile(&lfs, &file, "delay_between_saves", &delay_between_saves, sizeof(delay_between_saves));
+                        setDelayBetweenSaves(&delay_between_saves, &time_between_saves);
                         joy_state = JOY_LEFT;
                         KeyPressed = SET;
                     }
@@ -574,21 +332,7 @@ int main(void)
                     set_time_tmp = -1;
                     new_time = RtcTime;
                     new_date = RtcDate;
-                    switch (menu_position)
-                    {
-                    case 1:
-                        sprintf(text, "Wyswietl aktualny odczyt      ");
-                        break;
-                    case 2:
-                        sprintf(text, "Wyswietl historie      ");
-                        break;
-                    case 3:
-                        sprintf(text, "Ustaw date i godzine      ");
-                        break;
-                    case 4:
-                        sprintf(text, "Ustaw czas pomiedzy zapisami      ");
-                        break;
-                    }
+                    menuUserView(menu_position, text);
                     break;
                 }
 
@@ -620,15 +364,7 @@ int main(void)
             if (now - last_ms_save >= delay_between_saves)
             {
                 last_ms_save = now;
-                HAL_RTC_GetTime(&hrtc, &RtcTime, RTC_FORMAT_BIN);
-                HAL_RTC_GetDate(&hrtc, &RtcDate, RTC_FORMAT_BIN);
-                fract_part = modff(getTemperatureCelsius(), &int_part);
-                sprintf((char *)text, "Date %02d-%02d-20%02d Time %02d-%02d-%02d Temperature %d %01d      ",
-                        RtcDate.Date, RtcDate.Month, RtcDate.Year, RtcTime.Hours, RtcTime.Minutes, RtcTime.Seconds, (int)int_part, (int)(fract_part * 10.0));
-                number_of_records++;
-                sprintf(record_file_name, "record%d", number_of_records);
-                writeFile(&lfs, &file, record_file_name, &text, sizeof(text));
-                writeFile(&lfs, &file, "number_of_records", &number_of_records, sizeof(number_of_records));
+                saveData(&RtcTime, &RtcDate, &number_of_records);
             }
         }
         else
@@ -789,6 +525,29 @@ void writeFile(lfs_t *lfs, lfs_file_t *file, const char *path, const void *buffe
     lfs_file_close(lfs, file);
 }
 
+static int traverse_df_cb(void *p, lfs_block_t block)
+{
+    uint32_t *nb = p;
+    *nb += 1;
+    return 0;
+}
+
+static int df(void)
+{
+    int err;
+
+    uint32_t df_nballocatedblock = 0;
+    err = lfs_fs_traverse(&lfs, traverse_df_cb, &df_nballocatedblock);
+    if (err < 0)
+    {
+        return err;
+    }
+
+    uint32_t available = cfg.block_count * cfg.block_size - df_nballocatedblock * cfg.block_size;
+
+    return available;
+}
+
 int16_t GetTemperature()
 {
     int8_t buffer[2];
@@ -807,6 +566,24 @@ void initMagneto()
     MAGNETO_IO_Write(LSM303C_CTRL_REG3_M, 0x84);
     MAGNETO_IO_Write(LSM303C_CTRL_REG4_M, LSM303C_MAG_OM_Z_ULTRAHIGH | LSM303C_MAG_BLE_LSB);
     MAGNETO_IO_Write(LSM303C_CTRL_REG5_M, LSM303C_MAG_BDU_CONTINUOUS);
+}
+
+void initFileSystem(int *number_of_records, uint32_t *delay_between_saves)
+{
+    if (!lfs_mount(&lfs, &cfg))
+    {
+        BSP_LCD_GLASS_DisplayString((uint8_t *)"FS OK");
+        readFile(&lfs, &file, "number_of_records", number_of_records, sizeof((*number_of_records)));
+        readFile(&lfs, &file, "delay_between_saves", delay_between_saves, sizeof((*delay_between_saves)));
+    }
+    else
+    {
+        BSP_LCD_GLASS_DisplayString((uint8_t *)"FS NEW");
+        lfs_format(&lfs, &cfg);
+        lfs_mount(&lfs, &cfg);
+        writeFile(&lfs, &file, "number_of_records", number_of_records, sizeof((*number_of_records)));
+        writeFile(&lfs, &file, "delay_between_saves", delay_between_saves, sizeof((*delay_between_saves)));
+    }
 }
 
 float convertRegDataToTemperature(int16_t value)
@@ -876,6 +653,328 @@ void menu(int *menu_position, char *text, int *menu_select, int *i, bool erase_f
     default:
         break;
     }
+}
+
+void menuUserView(int choose, char *text)
+{
+    switch (choose)
+    {
+    case 1:
+        sprintf(text, "WYSWIETL AKTUALNY ODCZYT      ");
+        break;
+    case 2:
+        sprintf(text, "WYSWIETL HISTORIE      ");
+        break;
+    case 3:
+        sprintf(text, "USTAW DATE I GODZINE      ");
+        break;
+    case 4:
+        sprintf(text, "USTAW CZAS POMIEDZY ZAPISAMI      ");
+        break;
+    }
+}
+
+void setDateUserView(int choose, RTC_TimeTypeDef time, RTC_DateTypeDef date, char *text)
+{
+    switch (choose)
+    {
+    case 0:
+        sprintf(text, "D %02d", date.Date);
+        break;
+    case 1:
+        sprintf(text, "MSC %02d", date.Month);
+        break;
+    case 2:
+        sprintf(text, "R 20%02d", date.Year);
+        break;
+    case 3:
+        sprintf(text, "G %02d", time.Hours);
+        break;
+    case 4:
+        sprintf(text, "MIN %02d", time.Minutes);
+        break;
+    case 5:
+        sprintf(text, "S %02d", time.Seconds);
+        break;
+    default:
+        break;
+    }
+}
+
+void changeDateDown(int choose, RTC_TimeTypeDef *time, RTC_DateTypeDef *date)
+{
+    switch (choose)
+    {
+    case 0:
+        date->Date--;
+        if (date->Date < 1)
+        {
+            date->Date = 31;
+        }
+        break;
+    case 1:
+        date->Month--;
+        if (date->Month < 1)
+        {
+            date->Month = 12;
+        }
+        break;
+    case 2:
+
+        if (date->Year <= 0)
+        {
+            date->Year = 99;
+        }
+        else
+        {
+            date->Year--;
+        }
+        break;
+    case 3:
+
+        if (time->Hours <= 0)
+        {
+            time->Hours = 23;
+        }
+        else
+        {
+            time->Hours--;
+        }
+        break;
+    case 4:
+
+        if (time->Minutes <= 0)
+        {
+            time->Minutes = 59;
+        }
+        else
+        {
+            time->Minutes--;
+        }
+        break;
+    case 5:
+
+        if (time->Seconds <= 0)
+        {
+            time->Seconds = 59;
+        }
+        else
+        {
+            time->Seconds--;
+        }
+        break;
+    default:
+        break;
+    }
+}
+
+void changeDateUp(int choose, RTC_TimeTypeDef *time, RTC_DateTypeDef *date)
+{
+    switch (choose)
+    {
+    case 0:
+        date->Date++;
+        if (date->Date > 31)
+        {
+            date->Date = 1;
+        }
+        break;
+    case 1:
+        date->Month++;
+        if (date->Month > 12)
+        {
+            date->Month = 1;
+        }
+        break;
+    case 2:
+        date->Year++;
+        if (date->Year > 99)
+        {
+            date->Year = 0;
+        }
+        break;
+    case 3:
+        time->Hours++;
+        if (time->Hours > 23)
+        {
+            time->Hours = 0;
+        }
+        break;
+    case 4:
+        time->Minutes++;
+        if (time->Minutes > 59)
+        {
+            time->Minutes = 0;
+        }
+        break;
+    case 5:
+        time->Seconds++;
+        if (time->Seconds > 59)
+        {
+            time->Seconds = 0;
+        }
+        break;
+    default:
+        break;
+    }
+}
+
+void timeUserView(int choose, RTC_TimeTypeDef *time, char *text)
+{
+    switch (choose)
+    {
+    case 0:
+        sprintf(text, "G %02d", time->Hours);
+        break;
+    case 1:
+        sprintf(text, "MIN %02d", time->Minutes);
+        break;
+    case 2:
+        sprintf(text, "S %02d", time->Seconds);
+        break;
+    default:
+        break;
+    }
+}
+
+void changeTimeDown(int choose, RTC_TimeTypeDef *time)
+{
+    switch (choose)
+    {
+    case 0:
+
+        if (time->Hours <= 0)
+        {
+            time->Hours = 23;
+        }
+        else
+        {
+            time->Hours--;
+        }
+        break;
+    case 1:
+
+        if (time->Minutes <= 0)
+        {
+            time->Minutes = 59;
+        }
+        else
+        {
+            time->Minutes--;
+        }
+        break;
+    case 2:
+
+        if (time->Seconds <= 0)
+        {
+            time->Seconds = 59;
+        }
+        else
+        {
+            time->Seconds--;
+        }
+        if (time->Seconds == 0 && (time->Minutes == 0 && time->Hours == 0))
+        {
+            time->Seconds = 1;
+        }
+        break;
+    default:
+        break;
+    }
+}
+
+void changeTimeUp(int choose, RTC_TimeTypeDef *time)
+{
+    switch (choose)
+    {
+    case 0:
+        time->Hours++;
+        if (time->Hours > 23)
+        {
+            time->Hours = 0;
+        }
+        break;
+    case 1:
+        time->Minutes++;
+        if (time->Minutes > 59)
+        {
+            time->Minutes = 0;
+        }
+        break;
+    case 2:
+        time->Seconds++;
+        if (time->Seconds > 59)
+        {
+            time->Seconds = 0;
+        }
+        if (time->Seconds == 0 && (time->Minutes == 0 && time->Hours == 0))
+        {
+            time->Seconds = 1;
+        }
+        break;
+    default:
+        break;
+    }
+}
+
+void setDelayBetweenSaves(uint32_t *delay_between_saves, RTC_TimeTypeDef *time)
+{
+    (*delay_between_saves) = time->Hours * 3600000 + time->Minutes * 60000 + time->Seconds * 1000;
+    writeFile(&lfs, &file, "delay_between_saves", delay_between_saves, sizeof(delay_between_saves));
+}
+
+bool eraseAllData(int *number_of_records, int *read_record_number, uint32_t *delay_between_saves)
+{
+    lfs_unmount(&lfs);
+    lfs_format(&lfs, &cfg);
+    lfs_mount(&lfs, &cfg);
+    (*number_of_records) = 0;
+    writeFile(&lfs, &file, "number_of_records", number_of_records, sizeof(number_of_records));
+    writeFile(&lfs, &file, "delay_between_saves", delay_between_saves, sizeof(delay_between_saves));
+    (*read_record_number) = 1;
+
+    return false;
+}
+
+void viewActualData(RTC_TimeTypeDef *RtcTime, RTC_DateTypeDef *RtcDate, char *text)
+{
+    float int_part, fract_part;
+    HAL_RTC_GetTime(&hrtc, RtcTime, RTC_FORMAT_BIN);
+    HAL_RTC_GetDate(&hrtc, RtcDate, RTC_FORMAT_BIN);
+    fract_part = modff(getTemperatureCelsius(), &int_part);
+    sprintf((char *)text, "D %02d/%02d/%02d T %02d-%02d-%02d TEMP %d %01d*C      ",
+            RtcDate->Date, RtcDate->Month, RtcDate->Year, RtcTime->Hours, RtcTime->Minutes, RtcTime->Seconds, (int)int_part, (int)(fract_part * 10.0));
+}
+
+void saveData(RTC_TimeTypeDef *RtcTime, RTC_DateTypeDef *RtcDate, int *number_of_records)
+{
+    float int_part, fract_part;
+    char record_file_name[15], text[60];
+    HAL_RTC_GetTime(&hrtc, RtcTime, RTC_FORMAT_BIN);
+    HAL_RTC_GetDate(&hrtc, RtcDate, RTC_FORMAT_BIN);
+    fract_part = modff(getTemperatureCelsius(), &int_part);
+    sprintf((char *)text, "D %02d/%02d/%02d T %02d-%02d-%02d TEMP %d %01d*C      ",
+            RtcDate->Date, RtcDate->Month, RtcDate->Year, RtcTime->Hours, RtcTime->Minutes, RtcTime->Seconds, (int)int_part, (int)(fract_part * 10.0));
+    if (df() > 0)
+    {
+        (*number_of_records)++;
+        sprintf(record_file_name, "record%d", (*number_of_records));
+        writeFile(&lfs, &file, record_file_name, text, sizeof(text));
+        writeFile(&lfs, &file, "number_of_records", number_of_records, sizeof(number_of_records));
+    }
+    else
+    {
+        BSP_LCD_GLASS_Clear();
+        BSP_LCD_GLASS_DisplayString((char *)"FULL");
+        HAL_Delay(1000);
+    }
+}
+
+void setTimeBetweenSaves(RTC_TimeTypeDef *time, uint32_t delay)
+{
+    time->Seconds = (delay % 60000) / 1000;
+    time->Minutes = ((delay % 3600000) / 1000 - time->Seconds) / 60;
+    time->Hours = (delay / 1000 - time->Minutes * 60 - time->Seconds) / 3600;
 }
 /* USER CODE END 4 */
 
